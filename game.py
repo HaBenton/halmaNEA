@@ -119,11 +119,11 @@ class Game:
 
     
     def Move(self, start, end): #start and end are touples of coords
-        dy = start[1] - end[1]
-        dx = start[0] - end[0]
+        dy = end[1] - start[1]
+        dx = end[0] - start[0]
         print(dx)
         print(dy)
-        if (self.CornerCheck(start[1], start[0]) and self.CornerCheck(end[1], end[0])) or (not self.CornerCheck(start[1], start[0]) and not self.CornerCheck(end[1], end[0])):
+        if (self.CornerCheck(start[1], start[0]) and self.CornerCheck(end[1], end[0])) or (not self.CornerCheck(start[1], start[0]) and not self.CornerCheck(end[1], end[0])) or (not self.CornerCheck(start[1], start[0] and self.CornerCheck(end[1], end[0]))):
             if self._board[start[1]][start[0]] == self._turn: #selected piece is owned by active player
                 if self._board[end[1]][end[0]] == 0: #end tile is empty
                     if dx in self._movement and dy in self._movement: #within one space
@@ -131,11 +131,15 @@ class Game:
                         self._board[end[1]][end[0]] = self._turn
                         return "end"
                     elif dx in self._jump and dy in self._jump: #within two spaces for jump
-                        jumpOverY = start[0] + (dy//2)
-                        jumpOverX = start[1] + (dx//2)
-                        print(jumpOverX)
-                        print(jumpOverY)
+                        jumpOverY = start[1] + (dy//2)
+                        jumpOverX = start[0] + (dx//2)
+                        print("")
+                        print(dy//2)
+                        print(start[0], jumpOverX)
+                        print(start[1], jumpOverY)
+                        print(self._board[jumpOverY][jumpOverX])
                         if self._board[jumpOverY][jumpOverX] != 0: #check if there is a piece to be jumped over
+                            print(0)
                             self._board[start[1]][start[0]] = 0
                             self._board[end[1]][end[0]] = self._turn
                             return "hop"

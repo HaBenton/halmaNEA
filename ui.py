@@ -90,11 +90,14 @@ class Terminal(Ui):
                 except:
                     pass
                 if valid_input:
-                    for item in range(len(start)):
-                        start[item] = int(start[item])-1
-                    for item in range(len(end)):
-                        end[item] = int(end[item])-1
-                    valid = True
+                    try:
+                        for item in range(len(start)):
+                            start[item] = int(start[item])-1
+                        for item in range(len(end)):
+                            end[item] = int(end[item])-1
+                        valid = True
+                    except:
+                        valid = False
                     for item in start:
                         if item+1 not in self._tile_nums:
                             valid = False
