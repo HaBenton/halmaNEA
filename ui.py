@@ -1,4 +1,6 @@
 from game import Game
+import tkinter as tk
+from tkinter import N, S, E, W, ttk
 import sys
 
 class Ui():
@@ -153,8 +155,34 @@ class Terminal(Ui):
 
 class Gui(Ui):
     def __init__(self):
-        ...
+        super().__init__()
+        self.MenuRoot = tk.Tk()
+        self.MenuRoot.title("play game")
+
     
+    def PlayGame(self):
+        PlayerSelect = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
+        PlayerSelect.grid(column=0, row=0, sticky=(N, E, S, W))
+        SinglePlayer = tk.Label(PlayerSelect, text="Single Player").grid(column=0, row=0, sticky=(N,E,S,W))
+        MultiPlayer = tk.Label(PlayerSelect, text="Multiplayer").grid(column=1, row=0, sticky=(N,E,S,W))
+        EasyAIPlay = tk.Button(PlayerSelect, text="Easy", width=20, height=3).grid(column=0, row=1, sticky=(N,E,S,W))
+        MediumAIPlay = tk.Button(PlayerSelect, text="Medium", width=20, height=3).grid(column=0, row=2, sticky=(N,E,S,W))
+        HardAIPlay = tk.Button(PlayerSelect, text="Hard", width=20, height=3).grid(column=0, row=3, sticky=(N,E,S,W))
+        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3).grid(column=1, row=1, sticky=(N,E,S,W))
+        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3).grid(column=1, row=2, sticky=(N,E,S,W))
+        Quit = tk.Button(PlayerSelect, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=1, row=3, sticky=(N,E,S,W))
+        PlayerSelect.mainloop()
+
+    
+    def DisplayRules(self):
+        print("not implemented yet")
 
     def run(self):
-        ...
+        Menu = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
+        Menu.grid(column=0, row=0, sticky=(N, E, S, W))
+        PlayGame = tk.Button(Menu, text="Play Game", width= 30, height=4, command=(self.PlayGame)).grid(column=0, row=0, sticky=(N,E,S,W))
+        Rules = tk.Button(Menu, text="Rules", width=30, height=4, command=self.DisplayRules).grid(column=0, row=1, sticky=(N,E,S,W))
+        Quit = tk.Button(Menu, text="Quit", width=30, height=4, command=self.MenuRoot.destroy).grid(column=0, row=2, sticky=(N,E,S,W))
+        Menu.mainloop()
+    
+    

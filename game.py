@@ -139,7 +139,6 @@ class Game:
                         print(start[1], jumpOverY)
                         print(self._board[jumpOverY][jumpOverX])
                         if self._board[jumpOverY][jumpOverX] != 0: #check if there is a piece to be jumped over
-                            print(0)
                             self._board[start[1]][start[0]] = 0
                             self._board[end[1]][end[0]] = self._turn
                             return "hop"
