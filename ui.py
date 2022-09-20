@@ -175,7 +175,25 @@ class Gui(Ui):
 
     
     def DisplayRules(self):
-        print("not implemented yet")
+        RulesVar = """
+            The objective:\n
+            The objective of the game is to get all of your pieces into the opponents corner\n
+            \n
+            How to play:\n
+            You can select a single one of your pieces to move\n
+            You then select a square to move into\n
+            this is either one of the 9 adjacent places or\n
+            you can jump over a piece in one of the 9 adjacent places\n
+            if you jump over a piece then you can continue jumping as much as you want\n
+            however you can only jump once you have jumped once on that turn and only with that piece\n
+            """
+        RulesRoot = tk.Tk()
+        RulesRoot.title("Rules")
+        Rules = ttk.Frame(RulesRoot, padding="5 5 12 12")
+        Rules.grid(column=0, row=0, sticky=(N, E, S, W))
+        RulesText = tk.Label(Rules, text=RulesVar).grid(column=0, row=0, sticky=(N,E,S,W))
+        Close = tk.Button(Rules, text="Close", command=RulesRoot.destroy, width=10, height=2).grid(column=0, row=1, sticky=(N,S))
+        Rules.mainloop()
 
     def run(self):
         Menu = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
