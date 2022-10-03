@@ -2,6 +2,7 @@ from game import Game
 import tkinter as tk
 from tkinter import N, S, E, W, ttk
 import sys
+import pygame
 
 class Ui():
     def __init__(self):
@@ -168,12 +169,51 @@ class Gui(Ui):
         EasyAIPlay = tk.Button(PlayerSelect, text="Easy", width=20, height=3).grid(column=0, row=1, sticky=(N,E,S,W))
         MediumAIPlay = tk.Button(PlayerSelect, text="Medium", width=20, height=3).grid(column=0, row=2, sticky=(N,E,S,W))
         HardAIPlay = tk.Button(PlayerSelect, text="Hard", width=20, height=3).grid(column=0, row=3, sticky=(N,E,S,W))
-        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3).grid(column=1, row=1, sticky=(N,E,S,W))
-        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3).grid(column=1, row=2, sticky=(N,E,S,W))
+        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3, command=lambda:self.NoAiPlay(2)).grid(column=1, row=1, sticky=(N,E,S,W))
+        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3, command=lambda:self.NoAiPlay(4)).grid(column=1, row=2, sticky=(N,E,S,W))
         Quit = tk.Button(PlayerSelect, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=1, row=3, sticky=(N,E,S,W))
         PlayerSelect.mainloop()
 
-    
+    def boardSetup(self, players):
+        pygame.init()
+        
+        colour = (255,255,255)
+
+        screen = pygame.display.set_mode((1005, 800))
+        screen.fill((100,100,100))
+        pygame.display.set_caption("Halma")
+
+        for row in range(16):
+            for col in range(row % 2,16,2):
+                pygame.draw.rect(screen,colour,(row*50, col*50, 50, 50))
+        
+        pygame.draw.rect(screen,(0,0,0), (800,0,5,800))
+
+        pygame.display.update()        
+        return screen
+
+
+    def NoAiPlay(self, players):
+        screen = self.boardSetup(players)
+        
+        if players == 2:
+            ...
+        else:
+            ...
+        
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse = pygame.mouse.get_pos()
+                    pass
+
+        pygame.quit()
+
+
     def DisplayRules(self):
         RulesVar = """
             The objective:\n
