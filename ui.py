@@ -174,8 +174,7 @@ class Gui(Ui):
         Quit = tk.Button(PlayerSelect, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=1, row=3, sticky=(N,E,S,W))
         PlayerSelect.mainloop()
 
-    def boardSetup(self, players):
-        pygame.init()
+    def boardSetup(self, players, game):
         
         colour = (255,255,255)
 
@@ -188,18 +187,40 @@ class Gui(Ui):
                 pygame.draw.rect(screen,colour,(row*50, col*50, 50, 50))
         
         pygame.draw.rect(screen,(0,0,0), (800,0,5,800))
-
-        pygame.display.update()        
+        pygame.display.update()
+        self.boardUpdate(screen, game)
         return screen
+
+    def MoveCheck(self, mouse, game):
+        board = game.GetBoard()
+        if mouse[0] <= 800 and mouse[1] <= 800:
+            xposition = mouse[0]//50
+            yposition = mouse[1]//50
+            square = [xposition, yposition]
+            if board[yposition][xposition] == game.GetTurn():
+                ...
+            
+
+    def boardUpdate(self, screen, game):
+        board = game.GetBoard()
+        for row in range(16):
+            for col in range(16):
+                if board[row][col] != 0:
+                    if board[row][col] == 1:
+                        pygame.draw.circle(screen,(0,0,255),((row*50+25), (col*50)+25), 15)
+                    elif board[row][col] == 2:
+                        pygame.draw.circle(screen,(255,0,0),((row*50+25), (col*50)+25), 15)
+                    elif board[row][col] == 3:
+                        pygame.draw.circle(screen,(0,255,0),((row*50+25), (col*50)+25), 15)
+                    elif board[row][col] == 4:
+                        pygame.draw.circle(screen,(255,0,255),((row*50+25), (col*50)+25), 15)
+        pygame.display.update()
 
 
     def NoAiPlay(self, players):
-        screen = self.boardSetup(players)
-        
-        if players == 2:
-            ...
-        else:
-            ...
+        game = Game(int(players))
+        pygame.init()
+        screen = self.boardSetup(players, game)
         
         running = True
         while running:
@@ -209,7 +230,7 @@ class Gui(Ui):
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
-                    pass
+                    self.MoveCheck(mouse, game)
 
         pygame.quit()
 
