@@ -73,6 +73,9 @@ class Game:
     
     def GetJump(self):
         return self._jump
+
+    def GetMovement(self):
+        return self._movement
     
     def EndTurn(self):
         self.WinCheck()

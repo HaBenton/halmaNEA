@@ -175,34 +175,41 @@ class Gui(Ui):
         PlayerSelect.mainloop()
 
     def boardSetup(self, players, game):
-        
-        colour = (255,255,255)
-
         screen = pygame.display.set_mode((1005, 800))
         screen.fill((100,100,100))
         pygame.display.set_caption("Halma")
-
-        for row in range(16):
-            for col in range(row % 2,16,2):
-                pygame.draw.rect(screen,colour,(row*50, col*50, 50, 50))
-        
-        pygame.draw.rect(screen,(0,0,0), (800,0,5,800))
         pygame.display.update()
         self.boardUpdate(screen, game)
         return screen
 
-    def MoveCheck(self, mouse, game):
+    def MoveCheck(self, mouse, game, screen):
         board = game.GetBoard()
         if mouse[0] <= 800 and mouse[1] <= 800:
             xposition = mouse[0]//50
             yposition = mouse[1]//50
             square = [xposition, yposition]
             if board[yposition][xposition] == game.GetTurn():
-                ...
-            
+                print("can move")
+                self.GetMoves(game, xposition, yposition, screen)
+
+    def GetMoves(self, game, x, y, screen):
+        board = game.GetBoard()
+        self.boardUpdate(screen, game)
+        for xMove in game.GetMovement():
+            for yMove in game.GetMovement():
+                if board[y+yMove][x+xMove] == 0:
+                    pygame.draw.circle(screen,(0,0,0),(((x+xMove)*50+25), ((y+yMove)*50+25)), 15)
+        pygame.display.update()
+
 
     def boardUpdate(self, screen, game):
+        colour = (255,255,255)
         board = game.GetBoard()
+        pygame.draw.rect(screen,(100,100,100),(0,0,800,800))
+        for row in range(16):
+            for col in range(row % 2,16,2):
+                pygame.draw.rect(screen,colour,(row*50, col*50, 50, 50))
+        pygame.draw.rect(screen,(0,0,0), (800,0,5,800))
         for row in range(16):
             for col in range(16):
                 if board[row][col] != 0:
@@ -230,7 +237,7 @@ class Gui(Ui):
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
-                    self.MoveCheck(mouse, game)
+                    self.MoveCheck(mouse, game, screen)
 
         pygame.quit()
 
