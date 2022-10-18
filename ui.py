@@ -200,11 +200,13 @@ class Gui(Ui):
                 elif moveReturn == "hop":
                     moves = self.GetMoves(game, xposition, yposition, screen, True)
                     return moves, (xposition, yposition), True
+                elif moveReturn == False and jump:
+                    moves = self.GetMoves(game, toMove[0], toMove[1], screen, True)
+                    return moves, toMove, jump
                 return [], (), False
             else:
                 return moves, toMove, jump
         else:
-            #(820, 70, 150, 40)
             if 970 >= mouse[0] >= 820 and 110 >= mouse[1] >= 70 and jump:
                 game.EndTurn()
                 self.boardUpdate(screen, game, False)
