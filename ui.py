@@ -122,7 +122,6 @@ class Terminal(Ui):
                                         end_of_turn = True
                                         break
                                     else:
-                                        print(1)
                                         try:
                                             jump = jump_choice.split(" ")
                                             temp = []
@@ -155,6 +154,7 @@ class Terminal(Ui):
 
 
 class Gui(Ui):
+
     def __init__(self):
         super().__init__()
         self.MenuRoot = tk.Tk()
@@ -179,30 +179,70 @@ class Gui(Ui):
         screen.fill((100,100,100))
         pygame.display.set_caption("Halma")
         pygame.display.update()
-        self.boardUpdate(screen, game)
+        self.boardUpdate(screen, game, False)
         return screen
 
-    def MoveCheck(self, mouse, game, screen):
+    def MoveCheckandMove(self, mouse, game, screen, moves, toMove, jump):
         board = game.GetBoard()
         if mouse[0] <= 800 and mouse[1] <= 800:
             xposition = mouse[0]//50
             yposition = mouse[1]//50
-            square = [xposition, yposition]
-            if board[yposition][xposition] == game.GetTurn():
-                print("can move")
-                self.GetMoves(game, xposition, yposition, screen)
+            if board[yposition][xposition] == game.GetTurn() and not jump:
+                moves = self.GetMoves(game, xposition, yposition, screen, False)
+                return moves, (xposition, yposition), False
+            elif (xposition, yposition) in moves:
+                moveReturn = game.Move(toMove, (xposition, yposition))
+                self.boardUpdate(screen, game, False)
+                if moveReturn == "end":
+                    game.EndTurn()
+                    self.boardUpdate(screen, game, False)
+                    return [], (), False
+                elif moveReturn == "hop":
+                    moves = self.GetMoves(game, xposition, yposition, screen, True)
+                    return moves, (xposition, yposition), True
+                return [], (), False
+            else:
+                return moves, toMove, jump
+        else:
+            #(820, 70, 150, 40)
+            if 970 >= mouse[0] >= 820 and 110 >= mouse[1] >= 70 and jump:
+                game.EndTurn()
+                self.boardUpdate(screen, game, False)
+                return [], (), False
+            else:
+                return moves, toMove, jump
 
-    def GetMoves(self, game, x, y, screen):
+
+    def GetMoves(self, game, x, y, screen, jump):
         board = game.GetBoard()
-        self.boardUpdate(screen, game)
-        for xMove in game.GetMovement():
-            for yMove in game.GetMovement():
-                if board[y+yMove][x+xMove] == 0:
-                    pygame.draw.circle(screen,(0,0,0),(((x+xMove)*50+25), ((y+yMove)*50+25)), 15)
+        self.boardUpdate(screen, game, (x,y))
+        moves = []
+        if not jump:
+            for xMove in game.GetMovement():
+                for yMove in game.GetMovement():
+                    try:
+                        if board[y+yMove][x+xMove] == 0:
+                            xFinal,yFinal = (x+xMove),(y+yMove)
+                            if xFinal >= 0 and yFinal >= 0:
+                                moves.append((xFinal,yFinal))
+                                pygame.draw.circle(screen,(0,0,0),(((x+xMove)*50+25), ((y+yMove)*50+25)), 15)
+                    except IndexError:
+                        pass
+        for move in self._jump_check:
+            try:
+                if board[y+move[1]][x+move[0]] == 0:
+                    if board[y+(move[1]//2)][x+(move[0]//2)] != 0:
+                        xFinal,yFinal = (x+move[0]),(y+move[1])
+                        if xFinal >= 0 and yFinal >= 0:
+                            moves.append((xFinal,yFinal))
+                            pygame.draw.circle(screen,(0,0,0),(((x+move[0])*50+25), ((y+move[1])*50+25)), 15)
+            except IndexError:
+                pass
         pygame.display.update()
+        return moves
 
 
-    def boardUpdate(self, screen, game):
+    def boardUpdate(self, screen, game, selected):
         colour = (255,255,255)
         board = game.GetBoard()
         pygame.draw.rect(screen,(100,100,100),(0,0,800,800))
@@ -212,32 +252,104 @@ class Gui(Ui):
         pygame.draw.rect(screen,(0,0,0), (800,0,5,800))
         for row in range(16):
             for col in range(16):
-                if board[row][col] != 0:
-                    if board[row][col] == 1:
+                if board[col][row] != 0:
+                    if board[col][row] == 1:
                         pygame.draw.circle(screen,(0,0,255),((row*50+25), (col*50)+25), 15)
-                    elif board[row][col] == 2:
+                    elif board[col][row] == 2:
                         pygame.draw.circle(screen,(255,0,0),((row*50+25), (col*50)+25), 15)
-                    elif board[row][col] == 3:
+                    elif board[col][row] == 3:
                         pygame.draw.circle(screen,(0,255,0),((row*50+25), (col*50)+25), 15)
-                    elif board[row][col] == 4:
+                    elif board[col][row] == 4:
                         pygame.draw.circle(screen,(255,0,255),((row*50+25), (col*50)+25), 15)
+        if selected:
+            pygame.draw.circle(screen,(52,235,225),((selected[0]*50+25), (selected[1]*50)+25), 15)
+
+        self.Sidebar(game,screen)
+        
         pygame.display.update()
 
+    def Sidebar(self, game, screen):
+        FONT = pygame.font.Font(None, 25)
+        TurnText = FONT.render(f"It is player {game.GetTurn()}'s turn", True, "BLACK")
+        Turn = pygame.draw.rect(screen,(100,100,100), (820, 20, 150, 40))
+        screen.blit(TurnText, TurnText.get_rect(center = Turn.center))
+        EndTurnText = FONT.render("End Turn", True, "BLACK")
+        EndTurn = pygame.draw.rect(screen,(255,255,255), (820, 70, 150, 40))
+        screen.blit(EndTurnText, EndTurnText.get_rect(center = EndTurn.center))
+
+        if game.GetPlayers() == 2:
+            pygame.draw.rect(screen,(0,0,0),(248,0,4,102))
+            pygame.draw.rect(screen,(0,0,0),(198,98,54,4))
+            pygame.draw.rect(screen,(0,0,0),(198,98,4,52))
+            pygame.draw.rect(screen,(0,0,0),(148,148,54,4))
+            pygame.draw.rect(screen,(0,0,0),(148,148,4,52))
+            pygame.draw.rect(screen,(0,0,0),(98,198,54,4))
+            pygame.draw.rect(screen,(0,0,0),(98,198,4,52))
+            pygame.draw.rect(screen,(0,0,0),(0,248,102,4))
+
+            pygame.draw.rect(screen,(0,0,0),(548,698,4,102))
+            pygame.draw.rect(screen,(0,0,0),(548,698,54,4))
+            pygame.draw.rect(screen,(0,0,0),(598,648,4,52))
+            pygame.draw.rect(screen,(0,0,0),(598,648,54,4))
+            pygame.draw.rect(screen,(0,0,0),(648,598,4,52))
+            pygame.draw.rect(screen,(0,0,0),(648,598,54,4))
+            pygame.draw.rect(screen,(0,0,0),(698,548,4,52))
+            pygame.draw.rect(screen,(0,0,0),(698,548,102,4))
+        else:
+            pygame.draw.rect(screen,(0,0,0),(198,0,4,102))
+            pygame.draw.rect(screen,(0,0,0),(148,98,54,4))
+            pygame.draw.rect(screen,(0,0,0),(148,98,4,52))
+            pygame.draw.rect(screen,(0,0,0),(98,148,54,4))
+            pygame.draw.rect(screen,(0,0,0),(98,148,4,52))
+            pygame.draw.rect(screen,(0,0,0),(0,198,102,4))
+
+            pygame.draw.rect(screen,(0,0,0),(598,698,4,102))
+            pygame.draw.rect(screen,(0,0,0),(598,698,54,4))
+            pygame.draw.rect(screen,(0,0,0),(648,648,4,52))
+            pygame.draw.rect(screen,(0,0,0),(648,648,54,4))
+            pygame.draw.rect(screen,(0,0,0),(698,598,4,52))
+            pygame.draw.rect(screen,(0,0,0),(698,598,102,4))
+            
+            pygame.draw.rect(screen,(0,0,0),(598,0,4,102))
+            pygame.draw.rect(screen,(0,0,0),(598,98,54,4))
+            pygame.draw.rect(screen,(0,0,0),(648,98,4,52))
+            pygame.draw.rect(screen,(0,0,0),(648,148,54,4))
+            pygame.draw.rect(screen,(0,0,0),(698,148,4,52))
+            pygame.draw.rect(screen,(0,0,0),(698,198,102,4))
+
+            pygame.draw.rect(screen,(0,0,0),(198,698,4,102))
+            pygame.draw.rect(screen,(0,0,0),(148,698,54,4))
+            pygame.draw.rect(screen,(0,0,0),(148,648,4,52))
+            pygame.draw.rect(screen,(0,0,0),(98,648,54,4))
+            pygame.draw.rect(screen,(0,0,0),(98,598,4,52))
+            pygame.draw.rect(screen,(0,0,0),(0,598,102,4))
 
     def NoAiPlay(self, players):
+        
         game = Game(int(players))
         pygame.init()
+        FONT = pygame.font.Font(None, 25)
         screen = self.boardSetup(players, game)
         
         running = True
+        moves = []
+        toMove = ()
+        jump = False
         while running:
+            self.Sidebar(game,screen)
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.MenuRoot.destroy()
                     running = False
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
-                    self.MoveCheck(mouse, game, screen)
+                    if not jump:
+                        moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
+                    else:
+                        moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, True)
+                        
 
         pygame.quit()
 

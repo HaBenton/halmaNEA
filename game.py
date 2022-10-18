@@ -2,6 +2,12 @@ class Game:
     def __init__(self, players):
         self._movement = [0, 1, -1]
         self._jump = [0, 2, -2]
+        self._board = []
+        self._numPlayers = players
+        self._turn = 1
+        self.Setup()
+    
+    def Setup(self):
         self._board = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -20,11 +26,6 @@ class Game:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
-        self._numPlayers = players
-        self._turn = 1
-        self.Setup()
-    
-    def Setup(self):
         if self._numPlayers == 2: #2 player game setup
             n = 5
             for x in range(5): #player 1 pieces in place
@@ -76,6 +77,9 @@ class Game:
 
     def GetMovement(self):
         return self._movement
+
+    def GetPlayers(self):
+        return self._numPlayers
     
     def EndTurn(self):
         self.WinCheck()
@@ -124,9 +128,7 @@ class Game:
     def Move(self, start, end): #start and end are touples of coords
         dy = end[1] - start[1]
         dx = end[0] - start[0]
-        print(dx)
-        print(dy)
-        if (self.CornerCheck(start[1], start[0]) and self.CornerCheck(end[1], end[0])) or (not self.CornerCheck(start[1], start[0]) and not self.CornerCheck(end[1], end[0])) or (not self.CornerCheck(start[1], start[0] and self.CornerCheck(end[1], end[0]))):
+        if not self.CornerCheck(start[1], start[0]) or (self.CornerCheck(start[1], start[0]) and self.CornerCheck(end[1], end[0])):
             if self._board[start[1]][start[0]] == self._turn: #selected piece is owned by active player
                 if self._board[end[1]][end[0]] == 0: #end tile is empty
                     if dx in self._movement and dy in self._movement: #within one space
@@ -136,11 +138,6 @@ class Game:
                     elif dx in self._jump and dy in self._jump: #within two spaces for jump
                         jumpOverY = start[1] + (dy//2)
                         jumpOverX = start[0] + (dx//2)
-                        print("")
-                        print(dy//2)
-                        print(start[0], jumpOverX)
-                        print(start[1], jumpOverY)
-                        print(self._board[jumpOverY][jumpOverX])
                         if self._board[jumpOverY][jumpOverX] != 0: #check if there is a piece to be jumped over
                             self._board[start[1]][start[0]] = 0
                             self._board[end[1]][end[0]] = self._turn
