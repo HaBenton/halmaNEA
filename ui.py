@@ -224,20 +224,22 @@ class Gui(Ui):
                 for yMove in game.GetMovement():
                     try:
                         if board[y+yMove][x+xMove] == 0:
-                            xFinal,yFinal = (x+xMove),(y+yMove)
-                            if xFinal >= 0 and yFinal >= 0:
-                                moves.append((xFinal,yFinal))
-                                pygame.draw.circle(screen,(0,0,0),(((x+xMove)*50+25), ((y+yMove)*50+25)), 15)
+                            if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
+                                xFinal,yFinal = (x+xMove),(y+yMove)
+                                if xFinal >= 0 and yFinal >= 0:
+                                    moves.append((xFinal,yFinal))
+                                    pygame.draw.circle(screen,(0,0,0),(((x+xMove)*50+25), ((y+yMove)*50+25)), 15)
                     except IndexError:
                         pass
         for move in self._jump_check:
             try:
                 if board[y+move[1]][x+move[0]] == 0:
                     if board[y+(move[1]//2)][x+(move[0]//2)] != 0:
-                        xFinal,yFinal = (x+move[0]),(y+move[1])
-                        if xFinal >= 0 and yFinal >= 0:
-                            moves.append((xFinal,yFinal))
-                            pygame.draw.circle(screen,(0,0,0),(((x+move[0])*50+25), ((y+move[1])*50+25)), 15)
+                        if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+move[0],y+move[1])):
+                            xFinal,yFinal = (x+move[0]),(y+move[1])
+                            if xFinal >= 0 and yFinal >= 0:
+                                moves.append((xFinal,yFinal))
+                                pygame.draw.circle(screen,(0,0,0),(((x+move[0])*50+25), ((y+move[1])*50+25)), 15)
             except IndexError:
                 pass
         pygame.display.update()
