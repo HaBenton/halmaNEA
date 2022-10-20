@@ -1,3 +1,4 @@
+from pdb import Restart
 from game import Game
 import tkinter as tk
 from tkinter import N, S, E, W, ttk
@@ -41,15 +42,14 @@ class Terminal(Ui):
 
 
     def Winner(self, game):
-        if game.Winner():
-            replay = ""
-            print(f"the winner is {game.GetTurn()}")
-            while replay != "y" and replay != "n":
-                replay = input("would you like to play again (y/n)? ")
-            if replay == "y":
-                self.run()
-            elif replay == "n":
-                sys.exit()
+        replay = ""
+        print(f"the winner is {game.GetTurn()-1//game.GetPlayers()}")
+        while replay != "y" and replay != "n":
+            replay = input("would you like to play again (y/n)? ")
+        if replay == "y":
+            self.run()
+        elif replay == "n":
+            sys.exit()
     
 
     def GetJumpSpots(self, game, end):
@@ -141,13 +141,12 @@ class Terminal(Ui):
                                                 break
                                         except:
                                             pass              
-                            if game.WinCheck():
-                                print(f"")
-                            game.EndTurn()
+                            if game.EndTurn():
+                                self.Winner(game)
                             break
                         elif valid_move == "end":
-                            game.WinCheck()
-                            game.EndTurn()
+                            if game.EndTurn():
+                                self.Winner(game)
                             break
             
 
@@ -208,9 +207,12 @@ class Gui(Ui):
                 return moves, toMove, jump
         else:
             if 970 >= mouse[0] >= 820 and 110 >= mouse[1] >= 70 and jump:
-                game.EndTurn()
+                if game.EndTurn():
+                    self.Winner(game, screen)
                 self.boardUpdate(screen, game, False)
                 return [], (), False
+            elif 970 >= mouse[0] >= 820 and 170 >= mouse[1] >= 130:
+                ... #restart
             else:
                 return moves, toMove, jump
 
@@ -224,6 +226,7 @@ class Gui(Ui):
                 for yMove in game.GetMovement():
                     try:
                         if board[y+yMove][x+xMove] == 0:
+                            print(x,y)
                             if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
                                 xFinal,yFinal = (x+xMove),(y+yMove)
                                 if xFinal >= 0 and yFinal >= 0:
@@ -280,6 +283,9 @@ class Gui(Ui):
         EndTurnText = FONT.render("End Turn", True, "BLACK")
         EndTurn = pygame.draw.rect(screen,(255,255,255), (820, 70, 150, 40))
         screen.blit(EndTurnText, EndTurnText.get_rect(center = EndTurn.center))
+        RestartText = FONT.render("Restart", True, "BLACK")
+        Restart = pygame.draw.rect(screen, (255,255,255), (820, 130, 150, 40))
+        screen.blit(RestartText, RestartText.get_rect(center = Restart.center))
 
         if game.GetPlayers() == 2:
             pygame.draw.rect(screen,(0,0,0),(248,0,4,102))
@@ -356,6 +362,10 @@ class Gui(Ui):
                         
 
         pygame.quit()
+
+    
+    def Winner(self, game, screen):
+        print("winner")
 
 
     def DisplayRules(self):

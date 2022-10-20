@@ -82,10 +82,13 @@ class Game:
         return self._numPlayers
     
     def EndTurn(self):
-        self.WinCheck()
+        winner = False
+        if self.WinCheck():
+            winner = True
         self._turn += 1
         if self._turn > self._numPlayers:
             self._turn = 1
+        return winner
     
     def CornerCheck(self, xCheck, yCheck):
         if self._numPlayers == 2:
@@ -108,14 +111,14 @@ class Game:
                         if x == xCheck and y ==yCheck:
                             return True
                 n -= 1
-        elif self._turn == 3:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                         if x == xCheck and (15-y) == yCheck:
-                            return True
-                n -= 1
         elif self._turn == 4:
+            for x in range(width): 
+                    for y in range(width):
+                        if y <= n:
+                            if x == xCheck and (15-y) == yCheck:
+                                return True
+                    n -= 1
+        elif self._turn == 3:
             for x in range(width): 
                 for y in range(width):
                     if y <= n:
@@ -124,11 +127,14 @@ class Game:
                 n -= 1
         return False
 
-    
+        
+
     def Move(self, start, end): #start and end are touples of coords
         dy = end[1] - start[1]
         dx = end[0] - start[0]
-        if not self.CornerCheck(start[1], start[0]) or (self.CornerCheck(start[1], start[0]) and self.CornerCheck(end[1], end[0])):
+        print(start[1], start[0])
+        print(self.CornerCheck(start[1], start[0]))
+        if (not self.CornerCheck(start[0], start[1])) or (self.CornerCheck(start[0], start[1]) and self.CornerCheck(end[0], end[1])):
             if self._board[start[1]][start[0]] == self._turn: #selected piece is owned by active player
                 if self._board[end[1]][end[0]] == 0: #end tile is empty
                     if dx in self._movement and dy in self._movement: #within one space
@@ -155,28 +161,28 @@ class Game:
             for x in range(width): 
                 for y in range(width):
                     if y <= n:
-                        if self._board[15-x][15-y] != self._turn:
+                        if self._board[15-y][15-x] != self._turn:
                             return False
                 n -= 1
         elif self._turn == 2:
             for x in range(width): 
                 for y in range(width):
                     if y <= n:
-                        if self._board[x][y] != self._turn:
+                        if self._board[y][x] != self._turn:
                             return False
                 n -= 1
         elif self._turn == 3:
             for x in range(width): 
                 for y in range(width):
                     if y <= n:
-                         if self._board[x][15-y] != self._turn:
+                         if self._board[y][15-x] != self._turn:
                             return False
                 n -= 1
         elif self._turn == 4:
             for x in range(width): 
                 for y in range(width):
                     if y <= n:
-                        if self._board[15-x][y] != self._turn:
+                        if self._board[15-y][x] != self._turn:
                             return False
                 n -= 1
         return True
