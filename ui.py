@@ -285,6 +285,15 @@ class Gui(Ui):
         screen.blit(RestartText, RestartText.get_rect(center = Restart.center))
 
         if game.GetPlayers() == 2:
+
+            pygame.draw.rect(screen,(255,255,255),(820,190,150,100))
+            pygame.draw.circle(screen,(0,0,255),(850,220),15)
+            pygame.draw.circle(screen,(255,0,0),(850,260),15)
+            one = FONT.render("player 1", True, "BLACK")
+            two = FONT.render("player 2", True, "BLACK")
+            screen.blit(one,(870,210))
+            screen.blit(two,(870,250))
+
             pygame.draw.rect(screen,(0,0,0),(248,0,4,102))
             pygame.draw.rect(screen,(0,0,0),(198,98,54,4))
             pygame.draw.rect(screen,(0,0,0),(198,98,4,52))
@@ -303,6 +312,21 @@ class Gui(Ui):
             pygame.draw.rect(screen,(0,0,0),(698,548,4,52))
             pygame.draw.rect(screen,(0,0,0),(698,548,102,4))
         else:
+
+            pygame.draw.rect(screen,(255,255,255),(820,190,150,190))
+            pygame.draw.circle(screen,(0,0,255),(850,220),15)
+            pygame.draw.circle(screen,(255,0,0),(850,260),15)
+            pygame.draw.circle(screen,(0,255,0),(850,300),15)
+            pygame.draw.circle(screen,(255,0,255),(850,340),15)
+            one = FONT.render("player 1", True, "BLACK")
+            two = FONT.render("player 2", True, "BLACK")
+            three = FONT.render("player 3", True, "BLACK")
+            four = FONT.render("player 4", True, "BLACK")
+            screen.blit(one,(870,210))
+            screen.blit(two,(870,250))
+            screen.blit(three,(870,290))
+            screen.blit(four,(870,330))
+
             pygame.draw.rect(screen,(0,0,0),(198,0,4,102))
             pygame.draw.rect(screen,(0,0,0),(148,98,54,4))
             pygame.draw.rect(screen,(0,0,0),(148,98,4,52))
@@ -364,7 +388,7 @@ class Gui(Ui):
 
     
     def Winner(self, game, screen):
-        winnerNum = f"{game.GetTurn()-1//game.GetPlayers()}"
+        winnerNum = f"{game.GetTurn()-1 % game.GetPlayers()}"
         WinnerTextVar = f"The Winner is {winnerNum}!"
         EndOfGameRoot = tk.Tk()
         EndOfGameRoot.title("Game Over")
