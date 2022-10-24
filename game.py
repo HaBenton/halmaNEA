@@ -132,8 +132,6 @@ class Game:
     def Move(self, start, end): #start and end are touples of coords
         dy = end[1] - start[1]
         dx = end[0] - start[0]
-        print(start[1], start[0])
-        print(self.CornerCheck(start[1], start[0]))
         if (not self.CornerCheck(start[0], start[1])) or (self.CornerCheck(start[0], start[1]) and self.CornerCheck(end[0], end[1])):
             if self._board[start[1]][start[0]] == self._turn: #selected piece is owned by active player
                 if self._board[end[1]][end[0]] == 0: #end tile is empty

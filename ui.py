@@ -226,7 +226,6 @@ class Gui(Ui):
                 for yMove in game.GetMovement():
                     try:
                         if board[y+yMove][x+xMove] == 0:
-                            print(x,y)
                             if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
                                 xFinal,yFinal = (x+xMove),(y+yMove)
                                 if xFinal >= 0 and yFinal >= 0:
@@ -365,7 +364,16 @@ class Gui(Ui):
 
     
     def Winner(self, game, screen):
-        print("winner")
+        winnerNum = f"{game.GetTurn()-1//game.GetPlayers()}"
+        WinnerTextVar = f"The Winner is {winnerNum}!"
+        EndOfGameRoot = tk.Tk()
+        EndOfGameRoot.title("Game Over")
+        EndOfGame = ttk.Frame(EndOfGameRoot, padding="5 5 12 12")
+        EndOfGame.grid(column=0, row=0, sticky=(N, E, S, W))
+        WinnerText = tk.Label(EndOfGame, text=WinnerTextVar).grid(column=0, row=0, sticky=(N,E,S,W))
+        Close = tk.Button(EndOfGame, text="Close", command=EndOfGameRoot.destroy, width=10, height=2).grid(column=0, row=1, sticky=(N,S))
+        EndOfGame.mainloop()
+
 
 
     def DisplayRules(self):
