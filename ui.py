@@ -283,6 +283,12 @@ class Gui(Ui):
         RestartText = FONT.render("Restart", True, "BLACK")
         Restart = pygame.draw.rect(screen, (255,255,255), (820, 130, 150, 40))
         screen.blit(RestartText, RestartText.get_rect(center = Restart.center))
+        RulesText = FONT.render("Rules", True, "BLACK")
+        Rules = pygame.draw.rect(screen,(255,255,255), (820, 690, 150, 40))
+        screen.blit(RulesText, RulesText.get_rect(center = Rules.center))
+        QuitText = FONT.render("Quit", True, "BLACK")
+        Quit = pygame.draw.rect(screen,(255,255,255), (820, 740, 150, 40))
+        screen.blit(QuitText, QuitText.get_rect(center = Quit.center))
 
         if game.GetPlayers() == 2:
 
@@ -378,10 +384,17 @@ class Gui(Ui):
                     mouse = pygame.mouse.get_pos()
                     if 970 >= mouse[0] >= 820 and 170 >= mouse[1] >= 130:
                         self.NoAiPlay(players)
-                    if not jump:
-                        moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
+                    elif 970 >= mouse[0] >= 820 and 730 >= mouse[1] >= 690:
+                        self.DisplayRules()
+                        print("rules")
+                    elif 970 >= mouse[0] >= 820 and 780 >= mouse[1] >= 740:
+                        running = False
+                        pygame.quit()
                     else:
-                        moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, True)
+                        if not jump:
+                            moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
+                        else:
+                            moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, True)
                         
 
         pygame.quit()
@@ -395,7 +408,8 @@ class Gui(Ui):
         EndOfGame = ttk.Frame(EndOfGameRoot, padding="5 5 12 12")
         EndOfGame.grid(column=0, row=0, sticky=(N, E, S, W))
         WinnerText = tk.Label(EndOfGame, text=WinnerTextVar).grid(column=0, row=0, sticky=(N,E,S,W))
-        Close = tk.Button(EndOfGame, text="Close", command=EndOfGameRoot.destroy, width=10, height=2).grid(column=0, row=1, sticky=(N,S))
+        Close = tk.Button(EndOfGame, text="Close", command=EndOfGameRoot.destroy, width=20, height=3).grid(column=0, row=1, sticky=(N,S))
+        Restart = tk.Button(EndOfGame, text="Play Again", command=lambda:self.NoAiPlay(game.GetPlayers()), width=20, height=3).grid(column=0, row=2, sticky=(N,S))
         EndOfGame.mainloop()
 
 
