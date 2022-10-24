@@ -211,8 +211,6 @@ class Gui(Ui):
                     self.Winner(game, screen)
                 self.boardUpdate(screen, game, False)
                 return [], (), False
-            elif 970 >= mouse[0] >= 820 and 170 >= mouse[1] >= 130:
-                ... #restart
             else:
                 return moves, toMove, jump
 
@@ -226,7 +224,6 @@ class Gui(Ui):
                 for yMove in game.GetMovement():
                     try:
                         if board[y+yMove][x+xMove] == 0:
-                            print(x,y)
                             if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
                                 xFinal,yFinal = (x+xMove),(y+yMove)
                                 if xFinal >= 0 and yFinal >= 0:
@@ -355,6 +352,8 @@ class Gui(Ui):
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
+                    if 970 >= mouse[0] >= 820 and 170 >= mouse[1] >= 130:
+                        self.NoAiPlay(players)
                     if not jump:
                         moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
                     else:
@@ -365,7 +364,7 @@ class Gui(Ui):
 
     
     def Winner(self, game, screen):
-        print("winner")
+        print("winner") #winner should be shown here
 
 
     def DisplayRules(self):
