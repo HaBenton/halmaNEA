@@ -2,6 +2,16 @@ class Game:
     def __init__(self, players):
         self._movement = [0, 1, -1]
         self._jump = [0, 2, -2]
+        self._jump_check = [
+            [2, 2],
+            [0, 2],
+            [-2, 2],
+            [2, 0],
+            [-2, 0],
+            [2, -2],
+            [0, -2],
+            [-2, -2]
+        ]
         self._board = []
         self._numPlayers = players
         self._turn = 1
@@ -80,6 +90,9 @@ class Game:
 
     def GetPlayers(self):
         return self._numPlayers
+
+    def GetJumpCheck(self):
+        return self._jump_check
     
     def EndTurn(self):
         winner = False
@@ -127,7 +140,32 @@ class Game:
                 n -= 1
         return False
 
-        
+    
+    def GetMoves(self, x, y, jump):
+        board = self.GetBoard()
+        moves = []
+        if not jump:
+            for xMove in self.GetMovement():
+                for yMove in self.GetMovement():
+                    try:
+                        if board[y+yMove][x+xMove] == 0:
+                            if (not self.CornerCheck(x,y)) or (self.CornerCheck(x,y) and self.CornerCheck(x+xMove,y+yMove)):
+                                xFinal,yFinal = (x+xMove),(y+yMove)
+                                if xFinal >= 0 and yFinal >= 0:
+                                    moves.append((xFinal,yFinal))
+                    except IndexError:
+                        pass
+        for move in self._jump_check:
+            try:
+                if board[y+move[1]][x+move[0]] == 0:
+                    if board[y+(move[1]//2)][x+(move[0]//2)] != 0:
+                        if (not self.CornerCheck(x,y)) or (self.CornerCheck(x,y) and self.CornerCheck(x+move[0],y+move[1])):
+                            xFinal,yFinal = (x+move[0]),(y+move[1])
+                            if xFinal >= 0 and yFinal >= 0:
+                                moves.append((xFinal,yFinal))
+            except IndexError:
+                pass
+        return moves
 
     def Move(self, start, end): #start and end are touples of coords
         dy = end[1] - start[1]

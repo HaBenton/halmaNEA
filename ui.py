@@ -1,5 +1,6 @@
-from pdb import Restart
+from random import randint
 from game import Game
+from player import AI
 import tkinter as tk
 from tkinter import N, S, E, W, ttk
 import sys
@@ -9,16 +10,6 @@ class Ui():
     def __init__(self):
         self._tile_nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         self._allowed_lengths = [3, 4, 5]
-        self._jump_check = [
-            [2, 2],
-            [0, 2],
-            [-2, 2],
-            [2, 0],
-            [-2, 0],
-            [2, -2],
-            [0, -2],
-            [-2, -2]
-        ]
 
     def run(self):
         raise NotImplementedError
@@ -55,7 +46,7 @@ class Terminal(Ui):
     def GetJumpSpots(self, game, end):
         jump_spots = []
         board = game.GetBoard()
-        for place in self._jump_check:
+        for place in game.GetJumpCheck():
             try:
                 if board[end[1] + place[1]][end[0] + place[0]] == 0:
                     if board[end[1] + (place[1]//2)][end[0] + (place[0]//2)] != 0:
@@ -165,11 +156,11 @@ class Gui(Ui):
         PlayerSelect.grid(column=0, row=0, sticky=(N, E, S, W))
         SinglePlayer = tk.Label(PlayerSelect, text="Single Player").grid(column=0, row=0, sticky=(N,E,S,W))
         MultiPlayer = tk.Label(PlayerSelect, text="Multiplayer").grid(column=1, row=0, sticky=(N,E,S,W))
-        EasyAIPlay = tk.Button(PlayerSelect, text="Easy", width=20, height=3).grid(column=0, row=1, sticky=(N,E,S,W))
-        MediumAIPlay = tk.Button(PlayerSelect, text="Medium", width=20, height=3).grid(column=0, row=2, sticky=(N,E,S,W))
-        HardAIPlay = tk.Button(PlayerSelect, text="Hard", width=20, height=3).grid(column=0, row=3, sticky=(N,E,S,W))
-        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3, command=lambda:self.NoAiPlay(2)).grid(column=1, row=1, sticky=(N,E,S,W))
-        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3, command=lambda:self.NoAiPlay(4)).grid(column=1, row=2, sticky=(N,E,S,W))
+        EasyAIPlay = tk.Button(PlayerSelect, text="Easy", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.AiPlay(1)]).grid(column=0, row=1, sticky=(N,E,S,W))
+        MediumAIPlay = tk.Button(PlayerSelect, text="Medium", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.AiPlay(2)]).grid(column=0, row=2, sticky=(N,E,S,W))
+        HardAIPlay = tk.Button(PlayerSelect, text="Hard", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.AiPlay(3)]).grid(column=0, row=3, sticky=(N,E,S,W))
+        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.NoAiPlay(2)]).grid(column=1, row=1, sticky=(N,E,S,W))
+        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.NoAiPlay(4)]).grid(column=1, row=2, sticky=(N,E,S,W))
         Quit = tk.Button(PlayerSelect, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=1, row=3, sticky=(N,E,S,W))
         PlayerSelect.mainloop()
 
@@ -218,30 +209,9 @@ class Gui(Ui):
     def GetMoves(self, game, x, y, screen, jump):
         board = game.GetBoard()
         self.boardUpdate(screen, game, (x,y))
-        moves = []
-        if not jump:
-            for xMove in game.GetMovement():
-                for yMove in game.GetMovement():
-                    try:
-                        if board[y+yMove][x+xMove] == 0:
-                            if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
-                                xFinal,yFinal = (x+xMove),(y+yMove)
-                                if xFinal >= 0 and yFinal >= 0:
-                                    moves.append((xFinal,yFinal))
-                                    pygame.draw.circle(screen,(0,0,0),(((x+xMove)*50+25), ((y+yMove)*50+25)), 15)
-                    except IndexError:
-                        pass
-        for move in self._jump_check:
-            try:
-                if board[y+move[1]][x+move[0]] == 0:
-                    if board[y+(move[1]//2)][x+(move[0]//2)] != 0:
-                        if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+move[0],y+move[1])):
-                            xFinal,yFinal = (x+move[0]),(y+move[1])
-                            if xFinal >= 0 and yFinal >= 0:
-                                moves.append((xFinal,yFinal))
-                                pygame.draw.circle(screen,(0,0,0),(((x+move[0])*50+25), ((y+move[1])*50+25)), 15)
-            except IndexError:
-                pass
+        moves = game.GetMoves(x, y, jump)
+        for move in moves:
+            pygame.draw.circle(screen,(0,0,0),(((move[0])*50+25), ((move[1])*50+25)), 15)
         pygame.display.update()
         return moves
 
@@ -361,17 +331,19 @@ class Gui(Ui):
             pygame.draw.rect(screen,(0,0,0),(98,598,4,52))
             pygame.draw.rect(screen,(0,0,0),(0,598,102,4))
 
-    def NoAiPlay(self, players):
-        
-        game = Game(int(players))
+    def NoAiPlay(self, players, game=False, moves=[], toMove=(), jump=False):
+        if not game and players != None:
+            game = Game(int(players))
+        elif players == None:
+            return
         pygame.init()
         FONT = pygame.font.Font(None, 25)
         screen = self.boardSetup(players, game)
+
+        if toMove != ():
+            self.GetMoves(game,toMove[0],toMove[1],screen,jump)
         
         running = True
-        moves = []
-        toMove = ()
-        jump = False
         while running:
             self.Sidebar(game,screen)
             
@@ -385,8 +357,7 @@ class Gui(Ui):
                     if 970 >= mouse[0] >= 820 and 170 >= mouse[1] >= 130:
                         self.NoAiPlay(players)
                     elif 970 >= mouse[0] >= 820 and 730 >= mouse[1] >= 690:
-                        self.DisplayRules()
-                        print("rules")
+                        self.DisplayRules(game,players,moves,toMove,jump)
                     elif 970 >= mouse[0] >= 820 and 780 >= mouse[1] >= 740:
                         running = False
                         pygame.quit()
@@ -395,6 +366,62 @@ class Gui(Ui):
                             moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
                         else:
                             moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, True)
+                        
+
+        pygame.quit()
+
+    def AiPlay(self, difficulty):
+        game = Game(2)
+        ai = AI(difficulty)
+        pygame.init()
+        FONT = pygame.font.Font(None, 25)
+        screen = self.boardSetup(2, game)
+        
+        running = True
+        moves = []
+        toMove = ()
+        jump = False
+        while running:
+            self.Sidebar(game,screen)
+
+            if game.GetTurn() == 2:
+                aiToMove, aiMoveTo = ai.GetMove(game)
+                moveReturn = game.Move(aiToMove,aiMoveTo)
+                if moveReturn == "end":
+                    if game.EndTurn():
+                        self.Winner(game, screen)
+                    self.boardUpdate(screen, game, False)
+                elif moveReturn == "hop":
+                    self.boardUpdate(screen, game, False)
+                    if randint(0,1) == 0:
+                        aiToMove, aiMoveTo = ai.GetMove(game,aiMoveTo)
+                        moveReturn = game.Move(aiToMove,aiMoveTo)
+                    else:
+                        if game.EndTurn():
+                            self.Winner(game, screen)
+                        self.boardUpdate(screen, game, False)
+
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.MenuRoot.destroy()
+                    running = False
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse = pygame.mouse.get_pos()
+                    if 970 >= mouse[0] >= 820 and 170 >= mouse[1] >= 130:
+                        self.AiPlay(difficulty)
+                    elif 970 >= mouse[0] >= 820 and 730 >= mouse[1] >= 690:
+                        self.DisplayRules()
+                    elif 970 >= mouse[0] >= 820 and 780 >= mouse[1] >= 740:
+                        running = False
+                        pygame.quit()
+                    else:
+                        if game.GetTurn() == 1:
+                            if not jump:
+                                moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
+                            else:
+                                moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, True)
                         
 
         pygame.quit()
@@ -414,7 +441,7 @@ class Gui(Ui):
 
 
 
-    def DisplayRules(self):
+    def DisplayRules(self,game=False,players=None, moves=[], toMove=(), jump=False):
         RulesVar = """
             The objective:\n
             The objective of the game is to get all of your pieces into the opponents corner\n
@@ -432,8 +459,10 @@ class Gui(Ui):
         Rules = ttk.Frame(RulesRoot, padding="5 5 12 12")
         Rules.grid(column=0, row=0, sticky=(N, E, S, W))
         RulesText = tk.Label(Rules, text=RulesVar).grid(column=0, row=0, sticky=(N,E,S,W))
-        Close = tk.Button(Rules, text="Close", command=RulesRoot.destroy, width=10, height=2).grid(column=0, row=1, sticky=(N,S))
-        Rules.mainloop()
+        Close = tk.Button(Rules, text="Close", command=lambda:[RulesRoot.destroy(),self.NoAiPlay(players,game,moves,toMove,jump)], width=10, height=2).grid(column=0, row=1, sticky=(N,S))
+        RulesRoot.protocol("WM_DELETE_WINDOW", lambda:self.NoAiPlay(players,game))
+        Rules.mainloop() 
+
 
     def run(self):
         Menu = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
