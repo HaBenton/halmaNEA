@@ -121,7 +121,7 @@ class Game:
             for x in range(width): 
                 for y in range(width):
                     if y <= n:
-                        if x == xCheck and y ==yCheck:
+                        if x == xCheck and y == yCheck:
                             return True
                 n -= 1
         elif self._turn == 4:

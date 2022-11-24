@@ -1,6 +1,6 @@
 from random import randint
 from game import Game
-from player import AI
+from player import AI, Player
 import tkinter as tk
 from tkinter import N, S, E, W, ttk
 import sys
@@ -60,10 +60,9 @@ class Terminal(Ui):
                     
 
     def run(self):
-        while True:
+        players = ""
+        while players != "2" or players != "4":
             players = input("how many players (2 or 4): ")
-            if players == "2" or players == "4":
-                break
         game = Game(int(players))
         while True:
             print("")
