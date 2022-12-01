@@ -48,8 +48,16 @@ class AI():
             else:
                 jump = True
                 canMove.append(toMove)
-
-            self.deepSearch(game, board, canMove, jump, 3)
+            deepReturn = self.deepSearch(game, board, canMove, jump, 0)
+            weightMax = -100
+            nextMove = None
+            for key in deepReturn:
+                deepReturn[key] = sorted(deepReturn[key])
+                for item in deepReturn[key]:
+                    if item[0] > weightMax:
+                        weightMax = item[0]
+                        nextMove = [key,item[1]]
+            return nextMove[0],nextMove[1]
 
         elif self.difficuly == 3:
             ...
@@ -57,9 +65,12 @@ class AI():
     def deepSearch(self, game, board, canMove, jump, itterations):
         search = self.search(game, board, canMove, jump)
         for key in search:
+            print(key,search[key])
+        if itterations == 0:
+            return search
+        for key in search:
             for move in search[key]:
-                board = game.GetBoard()
-                self.simulateMove(board, key, move[1])
+                board = self.simulateMove(board, key, move[1])
                 if jump != True:
                     dx = key[0] - move[1][0]
                     dy = key[1] - move[1][1]
@@ -67,10 +78,22 @@ class AI():
                         jump = True
                     else:
                         jump = False
+                if jump == True:
+                    canMove = move[1]
+                else:
+                    canMove = []
+                    for row in range(16):
+                        for col in range(16):
+                            if board[col][row] == 2:
+                                canMove.append((col,row))
                 deepReturn = self.deepSearch(game, board, canMove, jump, itterations-1)
                 weight = 0
-                for key in deepReturn:
-                    weight += deepReturn[key][0]
+                for deepkey in deepReturn:
+                    for pair in deepReturn[deepkey]:
+                        weight += pair[0]
+                move[0] += weight
+        return search
+         
 
     def search(self, game, board, canMove, jump=False):
         pieceMove = {}
@@ -79,10 +102,12 @@ class AI():
             moves = game.GetMoves(piece[0],piece[1],jump)
             for move in moves:
                 weight = self.getWeight(board, piece, move)
-                moveWeights.append((weight,move))
-            moveWeights = deque(sorted(moveWeights))
-            for _ in range(len(moveWeights//2)):
-                moveWeights.popleft()
+                moveWeights.append([weight,move])
+            moveWeights = sorted(moveWeights)[::-1]
+            # for _ in range(len(moveWeights)//2):
+            #     moveWeights.popleft()
+            # splice to reverse and remove half of it
+            moveWeights = moveWeights[:-len(moveWeights)//2]
             pieceMove[piece] = moveWeights
         return pieceMove
 
@@ -90,7 +115,7 @@ class AI():
         # longer the distance the better
         # prioritise the center squares
         # try and minimise trailing pieces
-        ...
+        return randint(1,10)
 
     def simulateMove(self, board, toMove, moveTo):
         board[toMove[1]][toMove[0]] = 0
