@@ -1,6 +1,6 @@
 from random import randint
 from game import Game
-from player import AI, Player
+from player import AI, Human
 import tkinter as tk
 from tkinter import N, S, E, W, ttk
 import sys
@@ -47,15 +47,10 @@ class Terminal(Ui):
         jump_spots = []
         board = game.GetBoard()
         for place in game.GetJumpCheck():
-            try:
+            if 0 <= (end[1] + place[1]) <= 15 or 0 <= (end[0] + place[0]) <= 15:
                 if board[end[1] + place[1]][end[0] + place[0]] == 0:
                     if board[end[1] + (place[1]//2)][end[0] + (place[0]//2)] != 0:
-                        if 0 > (end[1] + place[1]) > 15 or 0 > (end[0] + place[0]) > 15:
-                            pass
-                        else:
-                            jump_spots.append([end[1] + place[1], end[0] + place[0]])
-            except:
-                pass
+                        jump_spots.append([end[1] + place[1], end[0] + place[0]])
         return jump_spots
                     
 
@@ -148,20 +143,107 @@ class Gui(Ui):
         super().__init__()
         self.MenuRoot = tk.Tk()
         self.MenuRoot.title("play game")
+        self.activeNames = [None, None, None, None]
+        self.names = {}
+        self.rawNames = []
+        with open ("stats.txt", "r") as f:
+            for line in f:
+                name = line.split(":")
+                winLoss = name[1].split("/")
+                self.names.update({name[0]:Human(name[0],int(winLoss[0]),int(winLoss[1]))})
+                self.rawNames.append(name[0])
 
+
+
+    def run(self):
+        Menu = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
+        Menu.grid(column=0, row=0, sticky=(N, E, S, W))
+        PlayGame = tk.Button(Menu, text="Play Game", width= 30, height=4, command=(self.PlayGame)).grid(column=0, row=0, sticky=(N,E,S,W))
+        Rules = tk.Button(Menu, text="Rules", width=30, height=4, command=self.DisplayRules).grid(column=0, row=1, sticky=(N,E,S,W))
+        Quit = tk.Button(Menu, text="Quit", width=30, height=4, command=self.MenuRoot.destroy).grid(column=0, row=2, sticky=(N,E,S,W))
+        Menu.mainloop()
     
     def PlayGame(self):
         PlayerSelect = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
         PlayerSelect.grid(column=0, row=0, sticky=(N, E, S, W))
         SinglePlayer = tk.Label(PlayerSelect, text="Single Player").grid(column=0, row=0, sticky=(N,E,S,W))
         MultiPlayer = tk.Label(PlayerSelect, text="Multiplayer").grid(column=1, row=0, sticky=(N,E,S,W))
-        EasyAIPlay = tk.Button(PlayerSelect, text="Easy", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.AiPlay(1)]).grid(column=0, row=1, sticky=(N,E,S,W))
-        MediumAIPlay = tk.Button(PlayerSelect, text="Medium", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.AiPlay(2)]).grid(column=0, row=2, sticky=(N,E,S,W))
-        HardAIPlay = tk.Button(PlayerSelect, text="Hard", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.AiPlay(3)]).grid(column=0, row=3, sticky=(N,E,S,W))
-        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.NoAiPlay(2)]).grid(column=1, row=1, sticky=(N,E,S,W))
-        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3, command=lambda:[self.MenuRoot.destroy(),self.NoAiPlay(4)]).grid(column=1, row=2, sticky=(N,E,S,W))
+        EasyAIPlay = tk.Button(PlayerSelect, text="Easy", width=20, height=3, command=lambda:self.PlayerNames(1,2)).grid(column=0, row=1, sticky=(N,E,S,W))
+        MediumAIPlay = tk.Button(PlayerSelect, text="Medium", width=20, height=3, command=lambda:self.PlayerNames(2,2)).grid(column=0, row=2, sticky=(N,E,S,W))
+        HardAIPlay = tk.Button(PlayerSelect, text="Hard", width=20, height=3, command=lambda:self.PlayerNames(3,2)).grid(column=0, row=3, sticky=(N,E,S,W))
+        TwoPlayersPlay = tk.Button(PlayerSelect, text="Two Players", width=20, height=3, command=lambda:self.PlayerNames(0,2)).grid(column=1, row=1, sticky=(N,E,S,W))
+        FourPlayersPlay = tk.Button(PlayerSelect, text="Four Players", width=20, height=3, command=lambda:self.PlayerNames(0,4)).grid(column=1, row=2, sticky=(N,E,S,W))
         Quit = tk.Button(PlayerSelect, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=1, row=3, sticky=(N,E,S,W))
         PlayerSelect.mainloop()
+
+    def PlayerNames(self, ai, players):
+        PlayerNames = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
+        PlayerNames.grid(column=0, row=0, sticky=(N, E, S, W))
+        AddName = tk.Label(PlayerNames, text="Add Name:").grid(column=0, row=0, sticky=(N,E,S,W))
+        NameToAdd = tk.Entry(PlayerNames).grid(column=0, row=0, sticky=(N,E,S,W))
+        AddButton = tk.Button(PlayerNames, text="Add", command=lambda:[self.AddName(NameToAdd.get()),NameToAdd.delete()]).grid(column=0, row=3, sticky=(N,E,S,W))
+        if ai != 0:
+            row = 6
+            MainNameLabel = tk.Label(PlayerNames, text="Name:").grid(column=0, row=4, sticky=(N,E,S,W))
+            mainNameDropdown = ttk.Combobox(PlayerNames, textvariable=self.rawNames).grid(column=0, row=5, sticky=(N,E,S,W))
+        elif players == 2:
+            row = 8
+
+            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:").grid(column=0, row=4, sticky=(N,E,S,W))
+            PlayerOneName = tk.StringVar()
+            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=5, sticky=(N,E,S,W))
+            PlayerNameOneBox['values'] = self.rawNames
+            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(0,PlayerOneName.get()))
+            
+            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=6, sticky=(N,E,S,W))
+            PlayerNameTwo = tk.StringVar()
+            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameTwo).grid(column=0, row=7, sticky=(N,E,S,W))
+            PlayerNameTwoBox['values'] = self.rawNames
+            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerNameTwo.get()))
+
+        elif players == 4:
+            row = 12
+            
+            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:").grid(column=0, row=4, sticky=(N,E,S,W))
+            PlayerOneName = tk.StringVar()
+            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=5, sticky=(N,E,S,W))
+            PlayerNameOneBox['values'] = self.rawNames
+            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(0,PlayerOneName))
+
+            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=6, sticky=(N,E,S,W))
+            PlayerNameTwo = tk.StringVar()
+            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=7, sticky=(N,E,S,W))
+            PlayerNameTwoBox['values'] = self.rawNames
+            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerOneName))
+
+            PlayerNameThreeLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=8, sticky=(N,E,S,W))
+            PlayerNameThree = tk.StringVar()
+            PlayerNameThreeBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=9, sticky=(N,E,S,W))
+            PlayerNameThreeBox['values'] = self.rawNames
+            PlayerNameThreeBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerOneName))
+
+            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=10, sticky=(N,E,S,W))
+            PlayerNameTwo = tk.StringVar()
+            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=11, sticky=(N,E,S,W))
+            PlayerNameTwoBox['values'] = self.rawNames
+            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerOneName))
+            
+        PlayButton = tk.Button(PlayerNames, text="Play", command=lambda:[self.MenuRoot.destroy(),self.gamemodeHandler(ai, players)]).grid(column=0, row=row, sticky=(N,E,S,W))
+        Quit = tk.Button(PlayerNames, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=0, row=row+1, sticky=(N,E,S,W))
+        PlayerNames.mainloop()
+
+    def AddName(self, name):
+        if name not in self.names:
+            if name != "":
+                self.names.update({name:Human(name,0,0)})
+                self.rawNames.append(name)
+
+    def nameHandler(self, index, name):
+        self.activeNames[index] = name
+
+    def gamemodeHandler(self, ai, players):
+        if ai != 0: self.AiPlay(ai)
+        else: self.NoAiPlay(players)
 
     def boardSetup(self, players, game):
         screen = pygame.display.set_mode((1005, 800))
@@ -270,22 +352,16 @@ class Gui(Ui):
             screen.blit(two,(870,250))
 
             pygame.draw.rect(screen,(0,0,0),(248,0,4,102))
-            pygame.draw.rect(screen,(0,0,0),(198,98,54,4))
-            pygame.draw.rect(screen,(0,0,0),(198,98,4,52))
-            pygame.draw.rect(screen,(0,0,0),(148,148,54,4))
-            pygame.draw.rect(screen,(0,0,0),(148,148,4,52))
-            pygame.draw.rect(screen,(0,0,0),(98,198,54,4))
-            pygame.draw.rect(screen,(0,0,0),(98,198,4,52))
             pygame.draw.rect(screen,(0,0,0),(0,248,102,4))
-
             pygame.draw.rect(screen,(0,0,0),(548,698,4,102))
-            pygame.draw.rect(screen,(0,0,0),(548,698,54,4))
-            pygame.draw.rect(screen,(0,0,0),(598,648,4,52))
-            pygame.draw.rect(screen,(0,0,0),(598,648,54,4))
-            pygame.draw.rect(screen,(0,0,0),(648,598,4,52))
-            pygame.draw.rect(screen,(0,0,0),(648,598,54,4))
-            pygame.draw.rect(screen,(0,0,0),(698,548,4,52))
             pygame.draw.rect(screen,(0,0,0),(698,548,102,4))
+            
+            pos = [198,148,98,598,648,548,698]
+            pos2 = [98,148,198,648,598,698,548]
+            for item in range(len(pos)):
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],54,4))
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],4,52))            
+        
         else:
 
             pygame.draw.rect(screen,(255,255,255),(820,190,150,190))
@@ -302,33 +378,24 @@ class Gui(Ui):
             screen.blit(three,(870,290))
             screen.blit(four,(870,330))
 
-            pygame.draw.rect(screen,(0,0,0),(198,0,4,102))
-            pygame.draw.rect(screen,(0,0,0),(148,98,54,4))
-            pygame.draw.rect(screen,(0,0,0),(148,98,4,52))
-            pygame.draw.rect(screen,(0,0,0),(98,148,54,4))
-            pygame.draw.rect(screen,(0,0,0),(98,148,4,52))
-            pygame.draw.rect(screen,(0,0,0),(0,198,102,4))
+            pos = [198,598,598,198]
+            pos2 = [0,698,0,698]
+            for item in range(len(pos)):
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],4,102))
+                pygame.draw.rect(screen,(0,0,0),(pos2[item],pos[item],102,4)) 
 
-            pygame.draw.rect(screen,(0,0,0),(598,698,4,102))
-            pygame.draw.rect(screen,(0,0,0),(598,698,54,4))
-            pygame.draw.rect(screen,(0,0,0),(648,648,4,52))
-            pygame.draw.rect(screen,(0,0,0),(648,648,54,4))
-            pygame.draw.rect(screen,(0,0,0),(698,598,4,52))
-            pygame.draw.rect(screen,(0,0,0),(698,598,102,4))
+            pos = [148,98,648,598,698]
+            pos2 = [98,148,648,698,598]
+            for item in range(len(pos)):
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],54,4))
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],4,52))     
             
-            pygame.draw.rect(screen,(0,0,0),(598,0,4,102))
-            pygame.draw.rect(screen,(0,0,0),(598,98,54,4))
-            pygame.draw.rect(screen,(0,0,0),(648,98,4,52))
-            pygame.draw.rect(screen,(0,0,0),(648,148,54,4))
-            pygame.draw.rect(screen,(0,0,0),(698,148,4,52))
-            pygame.draw.rect(screen,(0,0,0),(698,198,102,4))
+            pos = [598,98,648,148]
+            pos2 = [98,648,148,698]
+            for item in range(len(pos)):
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],54,4))
+                pygame.draw.rect(screen,(0,0,0),(pos2[item],pos[item],4,52))  
 
-            pygame.draw.rect(screen,(0,0,0),(198,698,4,102))
-            pygame.draw.rect(screen,(0,0,0),(148,698,54,4))
-            pygame.draw.rect(screen,(0,0,0),(148,648,4,52))
-            pygame.draw.rect(screen,(0,0,0),(98,648,54,4))
-            pygame.draw.rect(screen,(0,0,0),(98,598,4,52))
-            pygame.draw.rect(screen,(0,0,0),(0,598,102,4))
 
     def NoAiPlay(self, players, game=False, moves=[], toMove=(), jump=False):
         if not game and players != None:
@@ -384,21 +451,12 @@ class Gui(Ui):
             self.Sidebar(game,screen)
 
             if game.GetTurn() == 2:
-                aiToMove, aiMoveTo = ai.GetMove(game)
-                moveReturn = game.Move(aiToMove,aiMoveTo)
-                if moveReturn == "end":
-                    if game.EndTurn():
-                        self.Winner(game, screen)
-                    self.boardUpdate(screen, game, False)
-                elif moveReturn == "hop":
-                    self.boardUpdate(screen, game, False)
-                    if randint(0,1) == 0:
-                        aiToMove, aiMoveTo = ai.GetMove(game,aiMoveTo)
-                        moveReturn = game.Move(aiToMove,aiMoveTo)
-                    else:
-                        if game.EndTurn():
-                            self.Winner(game, screen)
-                        self.boardUpdate(screen, game, False)
+                move = ai.GetMove(game)
+                #print(move.start.x, move.start.y, move.end.x, move.end.y)
+                game.aiMove(move.start.x, move.start.y, move.end.x, move.end.y)
+                if game.EndTurn():
+                    self.Winner(game, screen)
+                self.boardUpdate(screen, game, False)
 
             
             for event in pygame.event.get():
@@ -417,12 +475,9 @@ class Gui(Ui):
                         pygame.quit()
                     else:
                         if game.GetTurn() == 1:
-                            if not jump:
-                                moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
-                            else:
-                                moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, True)
+                            moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, jump)
+                            
                         
-
         pygame.quit()
 
     
@@ -462,13 +517,3 @@ class Gui(Ui):
         RulesRoot.protocol("WM_DELETE_WINDOW", lambda:self.NoAiPlay(players,game))
         Rules.mainloop() 
 
-
-    def run(self):
-        Menu = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
-        Menu.grid(column=0, row=0, sticky=(N, E, S, W))
-        PlayGame = tk.Button(Menu, text="Play Game", width= 30, height=4, command=(self.PlayGame)).grid(column=0, row=0, sticky=(N,E,S,W))
-        Rules = tk.Button(Menu, text="Rules", width=30, height=4, command=self.DisplayRules).grid(column=0, row=1, sticky=(N,E,S,W))
-        Quit = tk.Button(Menu, text="Quit", width=30, height=4, command=self.MenuRoot.destroy).grid(column=0, row=2, sticky=(N,E,S,W))
-        Menu.mainloop()
-    
-    

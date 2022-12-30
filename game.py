@@ -36,44 +36,18 @@ class Game:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
-        if self._numPlayers == 2: #2 player game setup
+        cornerList = [(0,0),(15,15),(15,0),(0,15)]
+        if self._numPlayers == 2:
+            width = 5
             n = 5
-            for x in range(5): #player 1 pieces in place
-                for y in range(5):
-                    if y <= n:
-                        self._board[x][y] = 1
-                n -= 1
-            n = 5
-            for x in range(5): #player 2 pieces in place
-                for y in range(5):
-                    if y <= n:
-                        self._board[15-x][15-y] = 2
-                n -= 1
-        if self._numPlayers == 4: #4 player game setup
+        elif self._numPlayers == 4:
+            width = 4
             n = 4
-            for x in range(4): #player 1 pieces in place
-                for y in range(4):
-                    if y <= n:
-                        self._board[x][y] = 1
-                n -= 1
-            n = 4
-            for x in range(4): #player 2 pieces in place
-                for y in range(4):
-                    if y <= n:
-                        self._board[15-x][15-y] = 2
-                n -= 1
-            n = 4
-            for x in range(4): #player 3 pieces in place
-                for y in range(4):
-                    if y <= n:
-                        self._board[15-x][y] = 3
-                n -= 1
-            n = 4
-            for x in range(4): #player 4 pieces in place
-                for y in range(4):
-                    if y <= n:
-                        self._board[x][15-y] = 4
-                n -= 1
+        for player in range(self._numPlayers):
+            for x in range(width): 
+                for y in range(width):
+                    if y <= n - x:
+                        self._board[(abs(cornerList[player][1]-y))][(abs(cornerList[player][0]-x))] = player + 1
                     
 
     def GetBoard(self):
@@ -81,9 +55,6 @@ class Game:
     
     def GetTurn(self):
         return self._turn
-    
-    def GetJump(self):
-        return self._jump
 
     def GetMovement(self):
         return self._movement
@@ -104,70 +75,43 @@ class Game:
         return winner
     
     def CornerCheck(self, xCheck, yCheck):
+        cornerList = [(15,15),(0,0),(0,15),(15,0)]
         if self._numPlayers == 2:
             width = 5
             n = 5
         elif self._numPlayers == 4:
             width = 4
             n = 4
-        if self._turn == 1:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                        if (15-x) == xCheck and (15-y) == yCheck:
-                            return True
-                n -= 1
-        elif self._turn == 2:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                        if x == xCheck and y == yCheck:
-                            return True
-                n -= 1
-        elif self._turn == 4:
-            for x in range(width): 
-                    for y in range(width):
-                        if y <= n:
-                            if x == xCheck and (15-y) == yCheck:
-                                return True
-                    n -= 1
-        elif self._turn == 3:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                        if (15-x) == xCheck and y == yCheck:
-                            return True
-                n -= 1
+        for x in range(width): 
+            for y in range(width):
+                if y <= n - x:
+                    if (abs(cornerList[self._turn-1][0]-x)) == xCheck and (abs(cornerList[self._turn-1][1]-y)) == yCheck:
+                        return True
         return False
 
     
-    def GetMoves(self, x, y, jump):
-        board = self.GetBoard()
+    def GetMoves(self, x, y, jump,board=False):
+        if not board:
+            board = self.GetBoard()
         moves = []
         if not jump:
             for xMove in self.GetMovement():
                 for yMove in self.GetMovement():
-                    try:
+                    xFinal,yFinal = (x+xMove),(y+yMove)
+                    if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
                         if board[y+yMove][x+xMove] == 0:
                             if (not self.CornerCheck(x,y)) or (self.CornerCheck(x,y) and self.CornerCheck(x+xMove,y+yMove)):
-                                xFinal,yFinal = (x+xMove),(y+yMove)
-                                if xFinal >= 0 and yFinal >= 0:
-                                    moves.append((xFinal,yFinal))
-                    except IndexError:
-                        pass
-        for move in self._jump_check:
-            try:
+                                moves.append((xFinal,yFinal))
+        for move in self.GetJumpCheck():
+            xFinal,yFinal = (x+move[0]),(y+move[1])
+            if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
                 if board[y+move[1]][x+move[0]] == 0:
                     if board[y+(move[1]//2)][x+(move[0]//2)] != 0:
                         if (not self.CornerCheck(x,y)) or (self.CornerCheck(x,y) and self.CornerCheck(x+move[0],y+move[1])):
-                            xFinal,yFinal = (x+move[0]),(y+move[1])
-                            if xFinal >= 0 and yFinal >= 0:
-                                moves.append((xFinal,yFinal))
-            except IndexError:
-                pass
+                            moves.append((xFinal,yFinal))
         return moves
 
-    def Move(self, start, end): #start and end are touples of coords
+    def Move(self, start, end): #start and end are tuples of coords
         dy = end[1] - start[1]
         dx = end[0] - start[0]
         if (not self.CornerCheck(start[0], start[1])) or (self.CornerCheck(start[0], start[1]) and self.CornerCheck(end[0], end[1])):
@@ -184,43 +128,27 @@ class Game:
                             self._board[start[1]][start[0]] = 0
                             self._board[end[1]][end[0]] = self._turn
                             return "hop"
+            else:
+                print("not valid piece to move")
         return False
+
+    def aiMove(self, x, y, xFinal, yFinal):
+        self._board[y][x] = 0
+        self._board[yFinal][xFinal] = self.GetTurn()
+        
     
     def WinCheck(self):
+        cornerList = [(15,15),(0,0),(0,15),(15,0)]
         if self._numPlayers == 2:
             width = 5
             n = 5
         elif self._numPlayers == 4:
             width = 4
             n = 4
-        if self._turn == 1:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                        if self._board[15-y][15-x] != self._turn:
-                            return False
-                n -= 1
-        elif self._turn == 2:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                        if self._board[y][x] != self._turn:
-                            return False
-                n -= 1
-        elif self._turn == 3:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                         if self._board[y][15-x] != self._turn:
-                            return False
-                n -= 1
-        elif self._turn == 4:
-            for x in range(width): 
-                for y in range(width):
-                    if y <= n:
-                        if self._board[15-y][x] != self._turn:
-                            return False
-                n -= 1
+        for x in range(width): 
+            for y in range(width):
+                if y <= n - x:
+                    if self._board[(abs(cornerList[self._turn-1][1]-y))][(abs(cornerList[self._turn-1][0]-x))] != self._turn:
+                        return False
         return True
-
-
+        

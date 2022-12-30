@@ -1,129 +1,146 @@
-from collections import deque
 from random import randint
+from itertools import repeat
+from math import sqrt
+import copy
 
-class AI():
-    def __init__(self, difficulty):
-        self.difficuly = difficulty
-        self.target = self.GetTarget()
-    
-    
-    def GetTarget(self):
-        n = 5
-        target = []
-        for x in range(5): 
-                for y in range(5):
-                    if y <= n:
-                        target.append((x,y))
-                n -= 1
-        return target
+class Place():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-    def GetMove(self, game, toMove=None):
-        board = game.GetBoard()
-        if self.difficuly == 1:
-            if toMove == None:
-                canMove = []
-                for row in range(16):
-                    for col in range(16):
-                        if board[col][row] == 2:
-                            canMove.append((col,row))
-                pickPiece = randint(0,len(canMove)-1)
-                while len(game.GetMoves(canMove[pickPiece][0],canMove[pickPiece][1],False)) == 0:
-                    pickPiece = randint(0,len(canMove)-1)
-                moves = game.GetMoves(canMove[pickPiece][0],canMove[pickPiece][1],False)
-                pickMove = randint(0,len(moves)-1)
-                return canMove[pickPiece],moves[pickMove]
-            else:
-                moves = game.GetMoves(toMove[0],toMove[1],True)
-                pickMove = randint(0,len(moves)-1)
-                return toMove,moves[pickMove]
+class Move():
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
 
-        elif self.difficuly == 2:
-            canMove = []
-            if toMove == None:
-                for row in range(16):
-                    for col in range(16):
-                        if board[col][row] == 2:
-                            canMove.append((col,row))
-                jump = False
-            else:
-                jump = True
-                canMove.append(toMove)
-            deepReturn = self.deepSearch(game, board, canMove, jump, 0)
-            weightMax = -100
-            nextMove = None
-            for key in deepReturn:
-                deepReturn[key] = sorted(deepReturn[key])
-                for item in deepReturn[key]:
-                    if item[0] > weightMax:
-                        weightMax = item[0]
-                        nextMove = [key,item[1]]
-            return nextMove[0],nextMove[1]
+class ScoreResult():
+    def __init__(self, score, iswin, move=None):
+        self.score = score
+        self.iswin = iswin
+        self.move = move
 
-        elif self.difficuly == 3:
-            ...
-
-    def deepSearch(self, game, board, canMove, jump, itterations):
-        search = self.search(game, board, canMove, jump)
-        for key in search:
-            print(key,search[key])
-        if itterations == 0:
-            return search
-        for key in search:
-            for move in search[key]:
-                board = self.simulateMove(board, key, move[1])
-                if jump != True:
-                    dx = key[0] - move[1][0]
-                    dy = key[1] - move[1][1]
-                    if dx in game.GetJumpCheck() or dy in game.GetJumpCheck():
-                        jump = True
-                    else:
-                        jump = False
-                if jump == True:
-                    canMove = move[1]
-                else:
-                    canMove = []
-                    for row in range(16):
-                        for col in range(16):
-                            if board[col][row] == 2:
-                                canMove.append((col,row))
-                deepReturn = self.deepSearch(game, board, canMove, jump, itterations-1)
-                weight = 0
-                for deepkey in deepReturn:
-                    for pair in deepReturn[deepkey]:
-                        weight += pair[0]
-                move[0] += weight
-        return search
-         
-
-    def search(self, game, board, canMove, jump=False):
-        pieceMove = {}
-        for piece in canMove:
-            moveWeights = []
-            moves = game.GetMoves(piece[0],piece[1],jump)
-            for move in moves:
-                weight = self.getWeight(board, piece, move)
-                moveWeights.append([weight,move])
-            moveWeights = sorted(moveWeights)[::-1]
-            # for _ in range(len(moveWeights)//2):
-            #     moveWeights.popleft()
-            # splice to reverse and remove half of it
-            moveWeights = moveWeights[:-len(moveWeights)//2]
-            pieceMove[piece] = moveWeights
-        return pieceMove
-
-    def getWeight(self, board, piece, move):
-        # longer the distance the better
-        # prioritise the center squares
-        # try and minimise trailing pieces
-        return randint(1,10)
-
-    def simulateMove(self, board, toMove, moveTo):
-        board[toMove[1]][toMove[0]] = 0
-        board[moveTo[1]][moveTo[0]] = 2
-        return board
-
-    
+    def reverse(self):
+        self.score = -self.score
 
 class Player():
-    def __init__(self, name):
+    def __init__(self):
+        pass
+
+
+class AI(Player):
+    def __init__(self, difficulty):
+        self.difficuly = difficulty
+
+    def GetPieces(self, board, player=1):
+        canMove = []
+        for row in range(16):
+            for col in range(16):
+                if board[col][row] == player + 1:
+                    canMove.append((col,row))
+        return canMove
+
+    def GetMove(self, game):
+        board = copy.deepcopy(game.GetBoard())
+        if self.difficuly == 1:
+            moves = self.possibleMoves(game, board, game.GetTurn()-1)
+            chosen = randint(0, len(moves))
+            return moves[chosen]
+
+        elif self.difficuly == 2:
+            
+            score = self.score(game, game.GetTurn()-1, board, 3, game.GetTurn()-1) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
+            move = score.move
+            
+            return move
+
+
+    def score(self, game, player, position, depth, playerToMove, move=None):
+        if self.winfor(player, position): return ScoreResult(100,1)
+        if self.winfor(1-player, position): return ScoreResult(-100,-1)
+        if depth == 0:
+            return self.heuristicScore(player, position, playerToMove, move)
+        else:
+            moves = self.possibleMoves(game, position, playerToMove)
+            positions = map(self.simulateMove, repeat(position), moves, repeat(playerToMove))
+            scores = map(self.score, repeat(game), repeat(playerToMove), positions, repeat(depth-1), repeat(1-playerToMove), moves)
+            
+            maxScore = -1000
+            scoreObj = None
+
+            for score in scores:
+                if score.score > maxScore:
+                    maxScore = score.score
+                    scoreObj = score
+
+            if player == playerToMove: return scoreObj
+            else: 
+                scoreObj.reverse()
+                return scoreObj
+
+
+    def winfor(self, player, position):
+        cornerList = [(15,15),(0,0)]
+        for x in range(5): 
+            for y in range(5):
+                if y <= 5 - x:
+                    if position[(abs(cornerList[player][1]-y))][(abs(cornerList[player][0]-x))] != player + 1:
+                        return False
+        return True
+    
+    def heuristicScore(self, player, position, playerToMove, move):
+        pieces = self.GetPieces(position, playerToMove)
+        if playerToMove == 0: corner = 15
+        else: corner = 0
+        distance = 0
+        for piece in pieces:
+            distance += round(sqrt(((corner - piece[0])**2)+((corner - piece[1])**2)))
+        distance = round(distance/3)
+        if player == playerToMove: return ScoreResult(100-distance, 0, move)
+        else: return ScoreResult(distance-100, 0, move)
+
+    def possibleMoves(self, game, position, playerToMove):
+        pieces = self.GetPieces(position, playerToMove)
+        moves = []
+        for piece in pieces:
+            x = piece[0]
+            y = piece[1]
+            for xMove in game.GetMovement():
+                for yMove in game.GetMovement():
+                    xFinal,yFinal = (x+xMove),(y+yMove)
+                    if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
+                        if position[y+yMove][x+xMove] == 0:
+                            if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
+                                moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
+            moves += self.possibleJumpMoves(game, position, x, y)
+        return moves
+            
+
+    def possibleJumpMoves(self, game, position, x, y, prevX=-1, prevY=-1):
+        moves = []
+        for move in game.GetJumpCheck():
+            xFinal,yFinal = (x+move[0]),(y+move[1])
+            if xFinal != prevX and yFinal != prevY:
+                if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
+                    if position[y+move[1]][x+move[0]] == 0:
+                        if position[y+(move[1]//2)][x+(move[0]//2)] != 0:
+                            if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+move[0],y+move[1])):
+                                moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
+                                chainMoves = self.possibleJumpMoves(game, position, xFinal, yFinal, x, y)
+                                moves += chainMoves
+        return moves
+            
+
+    def simulateMove(self, position, move, playerToMove):
+        position[move.start.y][move.start.x] = 0
+        position[move.end.y][move.end.x] = playerToMove
+        return position
+
+
+class Human(Player):
+    def __init__(self, name, wins, loss):
         self.name = name
+        self.wins = wins
+        self.loss = loss
+        self.ratio = wins
+        if loss != 0:
+            self.ratio = round(wins/loss, 3)
