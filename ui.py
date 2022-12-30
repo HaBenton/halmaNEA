@@ -2,7 +2,7 @@ from random import randint
 from game import Game
 from player import AI, Human
 import tkinter as tk
-from tkinter import N, S, E, W, ttk
+from tkinter import N, S, E, W, ttk, END
 import sys
 import pygame
 
@@ -179,57 +179,75 @@ class Gui(Ui):
     def PlayerNames(self, ai, players):
         PlayerNames = ttk.Frame(self.MenuRoot, padding="5 5 12 12")
         PlayerNames.grid(column=0, row=0, sticky=(N, E, S, W))
-        AddName = tk.Label(PlayerNames, text="Add Name:").grid(column=0, row=0, sticky=(N,E,S,W))
-        NameToAdd = tk.Entry(PlayerNames).grid(column=0, row=0, sticky=(N,E,S,W))
-        AddButton = tk.Button(PlayerNames, text="Add", command=lambda:[self.AddName(NameToAdd.get()),NameToAdd.delete()]).grid(column=0, row=3, sticky=(N,E,S,W))
+        AddName = tk.Label(PlayerNames, text="Add Name:", width=20, height=2).grid(column=0, row=0, sticky=(N,E,S,W))
+        NameToAdd = tk.Entry(PlayerNames, width=20)
+        NameToAdd.grid(column=0, row=1, sticky=(N,E,S,W))
+        AddButton = tk.Button(PlayerNames, text="Add", width=20, height=2, command=lambda:[self.AddName(NameToAdd.get()),NameToAdd.delete(0, END)]).grid(column=0, row=2, sticky=(N,E,S,W))
+        
         if ai != 0:
-            row = 6
-            MainNameLabel = tk.Label(PlayerNames, text="Name:").grid(column=0, row=4, sticky=(N,E,S,W))
-            mainNameDropdown = ttk.Combobox(PlayerNames, textvariable=self.rawNames).grid(column=0, row=5, sticky=(N,E,S,W))
-        elif players == 2:
-            row = 8
 
-            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:").grid(column=0, row=4, sticky=(N,E,S,W))
-            PlayerOneName = tk.StringVar()
-            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=5, sticky=(N,E,S,W))
+            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=3, sticky=(N,E,S,W))
+            PlayerNameOne = tk.StringVar()
+            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameOne, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameOneBox))
+            PlayerNameOneBox.grid(column=0, row=4, sticky=(N,E,S,W))
             PlayerNameOneBox['values'] = self.rawNames
-            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(0,PlayerOneName.get()))
+            PlayerNameOneBox['state'] = 'readonly'
+            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(0,PlayerNameOne.get()))
+
+        elif players == 2:
+
+            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=3, sticky=(N,E,S,W))
+            PlayerNameOne = tk.StringVar()
+            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameOne, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameOneBox))
+            PlayerNameOneBox.grid(column=0, row=4, sticky=(N,E,S,W))
+            PlayerNameOneBox['values'] = self.rawNames
+            PlayerNameOneBox['state'] = 'readonly'
+            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(0,PlayerNameOne.get()))
             
-            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=6, sticky=(N,E,S,W))
+            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=5, sticky=(N,E,S,W))
             PlayerNameTwo = tk.StringVar()
-            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameTwo).grid(column=0, row=7, sticky=(N,E,S,W))
+            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameTwo, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameTwoBox))
+            PlayerNameTwoBox.grid(column=0, row=6, sticky=(N,E,S,W))
             PlayerNameTwoBox['values'] = self.rawNames
-            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerNameTwo.get()))
+            PlayerNameTwoBox['state'] = 'readonly'
+            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(1,PlayerNameTwo.get()))
 
         elif players == 4:
-            row = 12
-            
-            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:").grid(column=0, row=4, sticky=(N,E,S,W))
-            PlayerOneName = tk.StringVar()
-            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=5, sticky=(N,E,S,W))
+
+            PlayerNameOneLabel = tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=3, sticky=(N,E,S,W))
+            PlayerNameOne = tk.StringVar()
+            PlayerNameOneBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameOne, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameOneBox))
+            PlayerNameOneBox.grid(column=0, row=4, sticky=(N,E,S,W))
             PlayerNameOneBox['values'] = self.rawNames
-            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(0,PlayerOneName))
+            PlayerNameOneBox['state'] = 'readonly'
+            PlayerNameOneBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(0,PlayerNameOne.get()))
 
-            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=6, sticky=(N,E,S,W))
+            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=5, sticky=(N,E,S,W))
             PlayerNameTwo = tk.StringVar()
-            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=7, sticky=(N,E,S,W))
+            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameTwo, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameTwoBox))
+            PlayerNameTwoBox.grid(column=0, row=6, sticky=(N,E,S,W))
             PlayerNameTwoBox['values'] = self.rawNames
-            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerOneName))
+            PlayerNameTwoBox['state'] = 'readonly'
+            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(1,PlayerNameTwo.get()))
 
-            PlayerNameThreeLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=8, sticky=(N,E,S,W))
+            PlayerNameThreeLabel =tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=7, sticky=(N,E,S,W))
             PlayerNameThree = tk.StringVar()
-            PlayerNameThreeBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=9, sticky=(N,E,S,W))
+            PlayerNameThreeBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameThree, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameThreeBox))
+            PlayerNameThreeBox.grid(column=0, row=8, sticky=(N,E,S,W))
             PlayerNameThreeBox['values'] = self.rawNames
-            PlayerNameThreeBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerOneName))
+            PlayerNameThreeBox['state'] = 'readonly'
+            PlayerNameThreeBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(2,PlayerNameThree.get()))
 
-            PlayerNameTwoLabel =tk.Label(PlayerNames, text="Name:").grid(column=0, row=10, sticky=(N,E,S,W))
-            PlayerNameTwo = tk.StringVar()
-            PlayerNameTwoBox = ttk.Combobox(PlayerNames, textvariable=PlayerOneName).grid(column=0, row=11, sticky=(N,E,S,W))
-            PlayerNameTwoBox['values'] = self.rawNames
-            PlayerNameTwoBox.bind('<<ComboboxSelected>>', lambda:self.nameHandler(1,PlayerOneName))
+            PlayerNameFourLabel =tk.Label(PlayerNames, text="Name:", width=20, height=2).grid(column=0, row=9, sticky=(N,E,S,W))
+            PlayerNameFour = tk.StringVar()
+            PlayerNameFourBox = ttk.Combobox(PlayerNames, textvariable=PlayerNameFour, width=20, height=2, postcommand=lambda:self.nameListUpdate(PlayerNameFourBox))
+            PlayerNameFourBox.grid(column=0, row=10, sticky=(N,E,S,W))
+            PlayerNameFourBox['values'] = self.rawNames
+            PlayerNameFourBox['state'] = 'readonly'
+            PlayerNameFourBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(3,PlayerNameFour.get()))
             
-        PlayButton = tk.Button(PlayerNames, text="Play", command=lambda:[self.MenuRoot.destroy(),self.gamemodeHandler(ai, players)]).grid(column=0, row=row, sticky=(N,E,S,W))
-        Quit = tk.Button(PlayerNames, text="Quit", width=20, height=3, command=self.MenuRoot.destroy).grid(column=0, row=row+1, sticky=(N,E,S,W))
+        PlayButton = tk.Button(PlayerNames, text="Play", width=20, height=2, command=lambda:[self.MenuRoot.destroy(),self.gamemodeHandler(ai, players)]).grid(column=1, row=0, sticky=(N,E,S,W))
+        Quit = tk.Button(PlayerNames, text="Quit", width=20, height=2, command=self.MenuRoot.destroy).grid(column=1, row=1, sticky=(N,E,S,W))
         PlayerNames.mainloop()
 
     def AddName(self, name):
@@ -240,6 +258,9 @@ class Gui(Ui):
 
     def nameHandler(self, index, name):
         self.activeNames[index] = name
+
+    def nameListUpdate(self, box):
+        box['values'] = self.rawNames
 
     def gamemodeHandler(self, ai, players):
         if ai != 0: self.AiPlay(ai)
@@ -324,6 +345,7 @@ class Gui(Ui):
         pygame.display.update()
 
     def Sidebar(self, game, screen):
+        pygame.font.init()
         FONT = pygame.font.Font(None, 25)
         TurnText = FONT.render(f"It is player {game.GetTurn()}'s turn", True, "BLACK")
         Turn = pygame.draw.rect(screen,(100,100,100), (820, 20, 150, 40))
@@ -360,7 +382,33 @@ class Gui(Ui):
             pos2 = [98,148,198,648,598,698,548]
             for item in range(len(pos)):
                 pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],54,4))
-                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],4,52))            
+                pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],4,52)) 
+
+            stats = FONT.render("Stats:", True, "BLACK")
+            screen.blit(stats,(875,310))
+
+            PlayerOne = FONT.render(f"1: {self.activeNames[0]}", True, "BLACK")
+            screen.blit(PlayerOne,(845,340))
+            P1CurrStats = FONT.render(f"W: {self.names[self.activeNames[0]].currWins} || L: {self.names[self.activeNames[0]].currLoss}", True, "BLACK")
+            P1CurrRatio = FONT.render(f"WLR: {self.names[self.activeNames[0]].currRatio}", True, "BLACK")
+            P1AllStats = FONT.render(f"W: {self.names[self.activeNames[0]].Wins} || L: {self.names[self.activeNames[0]].Loss}", True, "BLACK")
+            P1Ratio = FONT.render(f"WLR: {self.names[self.activeNames[0]].Ratio}", True, "BLACK")
+            screen.blit(P1CurrStats,(810,360))
+            screen.blit(P1CurrRatio,(810,380))
+            screen.blit(P1AllStats,(810,400))
+            screen.blit(P1Ratio,(810,420))
+
+            if self.activeNames[1] != None:
+                PlayerTwo = FONT.render(f"2: {self.activeNames[1]}", True, "BLACK")
+                screen.blit(PlayerTwo,(845,445))
+                P2CurrStats = FONT.render(f"W: {self.names[self.activeNames[1]].currWins} || L: {self.names[self.activeNames[1]].currLoss}", True, "BLACK")
+                P2CurrRatio = FONT.render(f"WLR: {self.names[self.activeNames[1]].currRatio}", True, "BLACK")
+                P2AllStats = FONT.render(f"W: {self.names[self.activeNames[1]].Wins} || L: {self.names[self.activeNames[1]].Loss}", True, "BLACK")
+                P2Ratio = FONT.render(f"WLR: {self.names[self.activeNames[1]].Ratio}", True, "BLACK")
+                screen.blit(P2CurrStats,(810,465))
+                screen.blit(P2CurrRatio,(810,485))
+                screen.blit(P2AllStats,(810,505))
+                screen.blit(P2Ratio,(810,525))
         
         else:
 
@@ -396,6 +444,37 @@ class Gui(Ui):
                 pygame.draw.rect(screen,(0,0,0),(pos[item],pos2[item],54,4))
                 pygame.draw.rect(screen,(0,0,0),(pos2[item],pos[item],4,52))  
 
+            stats = FONT.render("Stats:", True, "BLACK")
+            screen.blit(stats,(875,390))
+
+            PlayerOne = FONT.render(f"1: {self.activeNames[0]}", True, "BLACK")
+            screen.blit(PlayerOne,(845,410))
+            P1CurrStats = FONT.render(f"W: {self.names[self.activeNames[0]].currWins} || L: {self.names[self.activeNames[0]].currLoss}", True, "BLACK")
+            P1AllStats = FONT.render(f"W: {self.names[self.activeNames[0]].Wins} || L: {self.names[self.activeNames[0]].Loss}", True, "BLACK")
+            screen.blit(P1CurrStats,(810,430))
+            screen.blit(P1AllStats,(810,450))
+
+            PlayerTwo = FONT.render(f"2: {self.activeNames[1]}", True, "BLACK")
+            screen.blit(PlayerTwo,(845,470))
+            P2CurrStats = FONT.render(f"W: {self.names[self.activeNames[1]].currWins} || L: {self.names[self.activeNames[1]].currLoss}", True, "BLACK")
+            P2AllStats = FONT.render(f"W: {self.names[self.activeNames[1]].Wins} || L: {self.names[self.activeNames[1]].Loss}", True, "BLACK")
+            screen.blit(P2CurrStats,(810,490))
+            screen.blit(P2AllStats,(810,510))
+
+            PlayerThree = FONT.render(f"3: {self.activeNames[2]}", True, "BLACK")
+            screen.blit(PlayerThree,(845,530))
+            P3CurrStats = FONT.render(f"W: {self.names[self.activeNames[2]].currWins} || L: {self.names[self.activeNames[2]].currLoss}", True, "BLACK")
+            P3AllStats = FONT.render(f"W: {self.names[self.activeNames[2]].Wins} || L: {self.names[self.activeNames[2]].Loss}", True, "BLACK")
+            screen.blit(P3CurrStats,(810,550))
+            screen.blit(P3AllStats,(810,570))
+
+            PlayerFour = FONT.render(f"4: {self.activeNames[3]}", True, "BLACK")
+            screen.blit(PlayerFour,(845,590))
+            P4CurrStats = FONT.render(f"W: {self.names[self.activeNames[3]].currWins} || L: {self.names[self.activeNames[3]].currLoss}", True, "BLACK")
+            P4AllStats = FONT.render(f"W: {self.names[self.activeNames[3]].Wins} || L: {self.names[self.activeNames[3]].Loss}", True, "BLACK")
+            screen.blit(P4CurrStats,(810,610))
+            screen.blit(P4AllStats,(810,630))
+
 
     def NoAiPlay(self, players, game=False, moves=[], toMove=(), jump=False):
         if not game and players != None:
@@ -403,6 +482,7 @@ class Gui(Ui):
         elif players == None:
             return
         pygame.init()
+        pygame.font.init()
         FONT = pygame.font.Font(None, 25)
         screen = self.boardSetup(players, game)
 
@@ -440,6 +520,7 @@ class Gui(Ui):
         game = Game(2)
         ai = AI(difficulty)
         pygame.init()
+        pygame.font.init()
         FONT = pygame.font.Font(None, 25)
         screen = self.boardSetup(2, game)
         
@@ -482,7 +563,30 @@ class Gui(Ui):
 
     
     def Winner(self, game, screen):
-        winnerNum = f"{game.GetTurn()-1 % game.GetPlayers()}"
+        winnerNum = game.GetTurn()-1 % game.GetPlayers()
+        winnerName = self.activeNames[winnerNum]
+        
+        for name in self.activeNames:
+            if name == None:
+                pass
+            elif name == winnerName:
+                self.names[name].currWins += 1
+                self.names[name].Wins += 1
+            else:
+                self.names[name].currLoss += 1
+                self.names[name].Loss += 1
+
+        first = True
+        self.names = sorted(self.names)
+        with open("stats.txt", "w") as f:
+            for key in self.names:
+                f.write(f"{key}:{self.names[name].Wins}/{self.names[name].Loss}")
+                if not first:
+                    f.write("\n")
+                else:
+                    first = False
+
+
         WinnerTextVar = f"The Winner is {winnerNum}!"
         EndOfGameRoot = tk.Tk()
         EndOfGameRoot.title("Game Over")

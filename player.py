@@ -44,7 +44,7 @@ class AI(Player):
         if self.difficuly == 1:
             moves = self.possibleMoves(game, board, game.GetTurn()-1)
             chosen = randint(0, len(moves))
-            return moves[chosen]
+            return moves[chosen-1]
 
         elif self.difficuly == 2:
             
@@ -139,8 +139,13 @@ class AI(Player):
 class Human(Player):
     def __init__(self, name, wins, loss):
         self.name = name
-        self.wins = wins
-        self.loss = loss
-        self.ratio = wins
-        if loss != 0:
-            self.ratio = round(wins/loss, 3)
+        self.currWins = 0
+        self.currLoss = 0
+        self.currRatio = self.currWins
+        if self.currLoss != 0:
+            self.currRatio = round(self.currWins/self.currLoss, 2)
+        self.Wins = wins
+        self.Loss = loss
+        self.Ratio = wins
+        if self.Loss != 0:
+            self.Ratio = round(self.Wins/self.Loss, 2)
