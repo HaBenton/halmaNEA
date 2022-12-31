@@ -31,12 +31,12 @@ class AI(Player):
     def __init__(self, difficulty):
         self.difficuly = difficulty
 
-    def GetPieces(self, board, player=1):
+    def GetPieces(self, board, player):
         canMove = []
-        for row in range(16):
-            for col in range(16):
-                if board[col][row] == player + 1:
-                    canMove.append((col,row))
+        for y in range(16):
+            for x in range(16):
+                if board[y][x] == player + 1:
+                    canMove.append((x,y))
         return canMove
 
     def GetMove(self, game):
@@ -48,7 +48,7 @@ class AI(Player):
 
         elif self.difficuly == 2:
             
-            score = self.score(game, game.GetTurn()-1, board, 3, game.GetTurn()-1) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
+            score = self.score(game, game.GetTurn()-1, board, 2, game.GetTurn()-1) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
             move = score.move
             
             return move
@@ -61,22 +61,43 @@ class AI(Player):
             return self.heuristicScore(player, position, playerToMove, move)
         else:
             moves = self.possibleMoves(game, position, playerToMove)
-            positions = map(self.simulateMove, repeat(position), moves, repeat(playerToMove))
-            scores = map(self.score, repeat(game), repeat(playerToMove), positions, repeat(depth-1), repeat(1-playerToMove), moves)
+            #print(len(moves))
+            #pause = input("next:")
+            positions = list(map(self.simulateMove, repeat(position), moves, repeat(playerToMove)))
+            #for board in positions:
+            #    self.dumpBoard(board)
+            #pause = input("next:")
+            scores = list(map(self.score, repeat(game), repeat(playerToMove), positions, repeat(depth-1), repeat(1-playerToMove), moves))
+            for sc in range(len(scores)):
+                scores[sc].move = moves[sc]
+            if moves == []: raise Exception(f"No Moves {moves}")
+            elif positions == []: raise Exception(f"No Positions {positions}")
+            elif scores == []: raise Exception(f"No Scores {scores}")
             
-            maxScore = -1000
-            scoreObj = None
+            maxScore = scores[0].score
+            scoreObj = scores[0]
 
             for score in scores:
                 if score.score > maxScore:
                     maxScore = score.score
                     scoreObj = score
+            
 
             if player == playerToMove: return scoreObj
             else: 
                 scoreObj.reverse()
                 return scoreObj
 
+    def simulateMove(self, position, move, playerToMove):
+        board = copy.deepcopy(position)
+        board[move.start.y][move.start.x] = 0
+        board[move.end.y][move.end.x] = playerToMove + 1
+        return board
+
+    def dumpBoard(self, board):
+        for row in board:
+            print(row)
+        print("")
 
     def winfor(self, player, position):
         cornerList = [(15,15),(0,0)]
@@ -109,31 +130,27 @@ class AI(Player):
                     xFinal,yFinal = (x+xMove),(y+yMove)
                     if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
                         if position[y+yMove][x+xMove] == 0:
-                            if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+xMove,y+yMove)):
+                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+xMove,y+yMove,playerToMove)):
                                 moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
-            moves += self.possibleJumpMoves(game, position, x, y)
+            moves += self.possibleJumpMoves(game, position, playerToMove, x, y, x, y)
         return moves
             
-
-    def possibleJumpMoves(self, game, position, x, y, prevX=-1, prevY=-1):
+    def possibleJumpMoves(self, game, position, playerToMove, originalX, originalY, x, y): 
         moves = []
-        for move in game.GetJumpCheck():
-            xFinal,yFinal = (x+move[0]),(y+move[1])
-            if xFinal != prevX and yFinal != prevY:
+        if position[y][x] == playerToMove+1:
+            for move in game.GetJumpCheck():
+                xFinal,yFinal = (x+move[0]),(y+move[1])
+                #if (xFinal,yFinal) not in allJumps:
                 if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
                     if position[y+move[1]][x+move[0]] == 0:
                         if position[y+(move[1]//2)][x+(move[0]//2)] != 0:
-                            if (not game.CornerCheck(x,y)) or (game.CornerCheck(x,y) and game.CornerCheck(x+move[0],y+move[1])):
-                                moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
-                                chainMoves = self.possibleJumpMoves(game, position, xFinal, yFinal, x, y)
-                                moves += chainMoves
+                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+move[0],y+move[1],playerToMove)):
+                                #print(move)
+                                moves.append(Move(Place(originalX,originalY),Place(xFinal,yFinal)))
+                                #allJumps.append((xFinal,yFinal))
+                                #chainMoves = self.possibleJumpMoves(game, position, originalX, originalY, xFinal, yFinal, allJumps)
+                                #moves += chainMoves
         return moves
-            
-
-    def simulateMove(self, position, move, playerToMove):
-        position[move.start.y][move.start.x] = 0
-        position[move.end.y][move.end.x] = playerToMove
-        return position
 
 
 class Human(Player):

@@ -389,9 +389,9 @@ class Gui(Ui):
 
             PlayerOne = FONT.render(f"1: {self.activeNames[0]}", True, "BLACK")
             screen.blit(PlayerOne,(845,340))
-            P1CurrStats = FONT.render(f"W: {self.names[self.activeNames[0]].currWins} || L: {self.names[self.activeNames[0]].currLoss}", True, "BLACK")
+            P1CurrStats = FONT.render(f"W: {self.names[self.activeNames[0]].currWins} // L: {self.names[self.activeNames[0]].currLoss}", True, "BLACK")
             P1CurrRatio = FONT.render(f"WLR: {self.names[self.activeNames[0]].currRatio}", True, "BLACK")
-            P1AllStats = FONT.render(f"W: {self.names[self.activeNames[0]].Wins} || L: {self.names[self.activeNames[0]].Loss}", True, "BLACK")
+            P1AllStats = FONT.render(f"W: {self.names[self.activeNames[0]].Wins} // L: {self.names[self.activeNames[0]].Loss}", True, "BLACK")
             P1Ratio = FONT.render(f"WLR: {self.names[self.activeNames[0]].Ratio}", True, "BLACK")
             screen.blit(P1CurrStats,(810,360))
             screen.blit(P1CurrRatio,(810,380))
@@ -401,9 +401,9 @@ class Gui(Ui):
             if self.activeNames[1] != None:
                 PlayerTwo = FONT.render(f"2: {self.activeNames[1]}", True, "BLACK")
                 screen.blit(PlayerTwo,(845,445))
-                P2CurrStats = FONT.render(f"W: {self.names[self.activeNames[1]].currWins} || L: {self.names[self.activeNames[1]].currLoss}", True, "BLACK")
+                P2CurrStats = FONT.render(f"W: {self.names[self.activeNames[1]].currWins} // L: {self.names[self.activeNames[1]].currLoss}", True, "BLACK")
                 P2CurrRatio = FONT.render(f"WLR: {self.names[self.activeNames[1]].currRatio}", True, "BLACK")
-                P2AllStats = FONT.render(f"W: {self.names[self.activeNames[1]].Wins} || L: {self.names[self.activeNames[1]].Loss}", True, "BLACK")
+                P2AllStats = FONT.render(f"W: {self.names[self.activeNames[1]].Wins} // L: {self.names[self.activeNames[1]].Loss}", True, "BLACK")
                 P2Ratio = FONT.render(f"WLR: {self.names[self.activeNames[1]].Ratio}", True, "BLACK")
                 screen.blit(P2CurrStats,(810,465))
                 screen.blit(P2CurrRatio,(810,485))
@@ -449,29 +449,29 @@ class Gui(Ui):
 
             PlayerOne = FONT.render(f"1: {self.activeNames[0]}", True, "BLACK")
             screen.blit(PlayerOne,(845,410))
-            P1CurrStats = FONT.render(f"W: {self.names[self.activeNames[0]].currWins} || L: {self.names[self.activeNames[0]].currLoss}", True, "BLACK")
-            P1AllStats = FONT.render(f"W: {self.names[self.activeNames[0]].Wins} || L: {self.names[self.activeNames[0]].Loss}", True, "BLACK")
+            P1CurrStats = FONT.render(f"W: {self.names[self.activeNames[0]].currWins} // L: {self.names[self.activeNames[0]].currLoss}", True, "BLACK")
+            P1AllStats = FONT.render(f"W: {self.names[self.activeNames[0]].Wins} // L: {self.names[self.activeNames[0]].Loss}", True, "BLACK")
             screen.blit(P1CurrStats,(810,430))
             screen.blit(P1AllStats,(810,450))
 
             PlayerTwo = FONT.render(f"2: {self.activeNames[1]}", True, "BLACK")
             screen.blit(PlayerTwo,(845,470))
-            P2CurrStats = FONT.render(f"W: {self.names[self.activeNames[1]].currWins} || L: {self.names[self.activeNames[1]].currLoss}", True, "BLACK")
-            P2AllStats = FONT.render(f"W: {self.names[self.activeNames[1]].Wins} || L: {self.names[self.activeNames[1]].Loss}", True, "BLACK")
+            P2CurrStats = FONT.render(f"W: {self.names[self.activeNames[1]].currWins} // L: {self.names[self.activeNames[1]].currLoss}", True, "BLACK")
+            P2AllStats = FONT.render(f"W: {self.names[self.activeNames[1]].Wins} // L: {self.names[self.activeNames[1]].Loss}", True, "BLACK")
             screen.blit(P2CurrStats,(810,490))
             screen.blit(P2AllStats,(810,510))
 
             PlayerThree = FONT.render(f"3: {self.activeNames[2]}", True, "BLACK")
             screen.blit(PlayerThree,(845,530))
-            P3CurrStats = FONT.render(f"W: {self.names[self.activeNames[2]].currWins} || L: {self.names[self.activeNames[2]].currLoss}", True, "BLACK")
-            P3AllStats = FONT.render(f"W: {self.names[self.activeNames[2]].Wins} || L: {self.names[self.activeNames[2]].Loss}", True, "BLACK")
+            P3CurrStats = FONT.render(f"W: {self.names[self.activeNames[2]].currWins} // L: {self.names[self.activeNames[2]].currLoss}", True, "BLACK")
+            P3AllStats = FONT.render(f"W: {self.names[self.activeNames[2]].Wins} // L: {self.names[self.activeNames[2]].Loss}", True, "BLACK")
             screen.blit(P3CurrStats,(810,550))
             screen.blit(P3AllStats,(810,570))
 
             PlayerFour = FONT.render(f"4: {self.activeNames[3]}", True, "BLACK")
             screen.blit(PlayerFour,(845,590))
-            P4CurrStats = FONT.render(f"W: {self.names[self.activeNames[3]].currWins} || L: {self.names[self.activeNames[3]].currLoss}", True, "BLACK")
-            P4AllStats = FONT.render(f"W: {self.names[self.activeNames[3]].Wins} || L: {self.names[self.activeNames[3]].Loss}", True, "BLACK")
+            P4CurrStats = FONT.render(f"W: {self.names[self.activeNames[3]].currWins} // L: {self.names[self.activeNames[3]].currLoss}", True, "BLACK")
+            P4AllStats = FONT.render(f"W: {self.names[self.activeNames[3]].Wins} // L: {self.names[self.activeNames[3]].Loss}", True, "BLACK")
             screen.blit(P4CurrStats,(810,610))
             screen.blit(P4AllStats,(810,630))
 
@@ -531,10 +531,16 @@ class Gui(Ui):
         while running:
             self.Sidebar(game,screen)
 
+            count = 0
+            for row in game.GetBoard():
+                count += row.count(2)
+            if count > 19:
+                raise Exception("Duplicated piece")
+
             if game.GetTurn() == 2:
                 move = ai.GetMove(game)
-                #print(move.start.x, move.start.y, move.end.x, move.end.y)
-                game.aiMove(move.start.x, move.start.y, move.end.x, move.end.y)
+                if game.GetBoard()[move.start.y][move.start.x] == 0: raise Exception("No selected piece")
+                game.aiMove(move)
                 if game.EndTurn():
                     self.Winner(game, screen)
                 self.boardUpdate(screen, game, False)
