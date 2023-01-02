@@ -1,6 +1,6 @@
 from random import randint
 from game import Game
-from player import Human, EasyAI, MediumAI
+from player import Human, EasyAI, MediumAI, HardAI
 import tkinter as tk
 from tkinter import N, S, E, W, ttk, END
 import sys
@@ -274,7 +274,7 @@ class Gui(Ui):
         self.boardUpdate(screen, game, False)
         return screen
 
-    def MoveCheckandMove(self, mouse, game, screen, moves, toMove, jump):
+    def MoveCheckandMove(self, mouse, game, screen, moves, toMove, jump, diff=0):
         board = game.GetBoard()
         if mouse[0] <= 800 and mouse[1] <= 800:
             xposition = mouse[0]//50
@@ -286,7 +286,9 @@ class Gui(Ui):
                 moveReturn = game.Move(toMove, (xposition, yposition))
                 self.boardUpdate(screen, game, False)
                 if moveReturn == "end":
-                    game.EndTurn()
+                    if game.EndTurn():
+                        if diff != 0: self.Winner(game,game.GetPlayers())
+                        else: self.Winner(game,0,diff)
                     self.boardUpdate(screen, game, False)
                     return [], (), False
                 elif moveReturn == "hop":
@@ -301,7 +303,8 @@ class Gui(Ui):
         else:
             if 970 >= mouse[0] >= 820 and 110 >= mouse[1] >= 70 and jump:
                 if game.EndTurn():
-                    self.Winner(game, screen)
+                    if diff != 0: self.Winner(game,game.GetPlayers())
+                    else: self.Winner(game,0,diff)
                 self.boardUpdate(screen, game, False)
                 return [], (), False
             else:
@@ -526,6 +529,7 @@ class Gui(Ui):
         game = Game(2)
         if difficulty == 1: ai = EasyAI()
         elif difficulty == 2: ai = MediumAI()
+        elif difficulty == 3: ai = HardAI()
         pygame.init()
         pygame.font.init()
         FONT = pygame.font.Font(None, 25)
@@ -549,7 +553,7 @@ class Gui(Ui):
                 if game.GetBoard()[move.start.y][move.start.x] == 0: raise Exception("No selected piece")
                 game.aiMove(move)
                 if game.EndTurn():
-                    self.Winner(game, screen)
+                    self.Winner(game,0,difficulty)
                 self.boardUpdate(screen, game, False)
 
             
@@ -572,7 +576,7 @@ class Gui(Ui):
                         self.boardUpdate(screen, game, False)
                     else:
                         if game.GetTurn() == 1:
-                            moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, jump)
+                            moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, jump, difficulty)
                             
                         
         pygame.quit()
@@ -593,8 +597,10 @@ class Gui(Ui):
 
 
     
-    def Winner(self, game, screen):
-        winnerNum = game.GetTurn()-1 % game.GetPlayers()
+    def Winner(self, game, replay, diff=0):
+        winnerNum = game.GetTurn()-1
+        if winnerNum == 0:
+            winnerNum = game.GetPlayers()
         winnerName = self.activeNames[winnerNum]
         
         for name in self.activeNames:
@@ -608,26 +614,31 @@ class Gui(Ui):
                 self.names[name].Loss += 1
 
         first = True
-        self.names = sorted(self.names)
+        sorted(self.names)
         with open("stats.txt", "w") as f:
             for key in self.names:
-                f.write(f"{key}:{self.names[name].Wins}/{self.names[name].Loss}")
                 if not first:
                     f.write("\n")
                 else:
                     first = False
+                f.write(f"{key}:{self.names[key].Wins}/{self.names[key].Loss}")
+                
 
 
-        WinnerTextVar = f"The Winner is {winnerNum}!"
+        WinnerTextVar = f"The Winner is player {winnerNum}!"
         EndOfGameRoot = tk.Tk()
         EndOfGameRoot.title("Game Over")
         EndOfGame = ttk.Frame(EndOfGameRoot, padding="5 5 12 12")
         EndOfGame.grid(column=0, row=0, sticky=(N, E, S, W))
         WinnerText = tk.Label(EndOfGame, text=WinnerTextVar).grid(column=0, row=0, sticky=(N,E,S,W))
-        Close = tk.Button(EndOfGame, text="Close", command=EndOfGameRoot.destroy, width=20, height=3).grid(column=0, row=1, sticky=(N,S))
-        Restart = tk.Button(EndOfGame, text="Play Again", command=lambda:self.NoAiPlay(game.GetPlayers()), width=20, height=3).grid(column=0, row=2, sticky=(N,S))
+        Close = tk.Button(EndOfGame, text="Close", command=lambda:[EndOfGameRoot.destroy()], width=20, height=3).grid(column=0, row=1, sticky=(N,S))
+        Restart = tk.Button(EndOfGame, text="Play Again", command=lambda:[EndOfGameRoot.destroy(),self.replayHandler(replay,diff)], width=20, height=3).grid(column=0, row=2, sticky=(N,S))
         EndOfGame.mainloop()
 
+    def replayHandler(self, replay, diff):
+        if replay == 2: self.NoAiPlay(2)
+        elif replay == 4: self.NoAiPlay(4) 
+        elif replay == 0: self.AiPlay(diff)
 
 
     def DisplayRules(self,game=False,players=None, moves=[], toMove=(), jump=False):

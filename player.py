@@ -121,12 +121,12 @@ class EasyAI(Player):
         chosen = randint(0, len(moves))
         return moves[chosen-1]
 
-    
+
 
 class MediumAI(Player):
     def __init__(self):
         ...
-        
+
     def GetMove(self, game):
         board = copy.deepcopy(game.GetBoard())
         score = self.score(game, game.GetTurn()-1, board, 2, game.GetTurn()-1) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
@@ -168,7 +168,6 @@ class MediumAI(Player):
                 scoreObj.reverse()
                 return scoreObj
 
-    
 
     def sortScores(self, scores, low, high):
         if low < high:
@@ -208,6 +207,62 @@ class MediumAI(Player):
         distance = round(distance/3)
         if player == playerToMove: return ScoreResult(100-distance, 0, move)
         else: return ScoreResult(distance-100, 0, move)
+
+
+
+class HardAI(Player):
+    def __init__(self):
+        ...
+
+    def GetMove(self, game):
+        board = copy.deepcopy(game.GetBoard())
+        score = self.score(game, game.GetTurn()-1, board, 3, game.GetTurn()-1, -200) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
+        return score.move
+
+
+    def score(self, game, player, position, depth, playerToMove, bestForParent):
+        if self.winfor(player, position): return ScoreResult(100,1)
+        if self.winfor(1-player, position): return ScoreResult(-100,-1)
+        if depth == 0:
+            return self.heuristicScore(player, position, playerToMove)
+        else:
+            moves = self.possibleMoves(game, position, playerToMove)
+            #print(len(moves))
+            #pause = input("next:")
+            positions = list(map(self.simulateMove, repeat(position), moves, repeat(playerToMove)))
+            #for board in positions:
+            #    self.dumpBoard(board)
+            #pause = input("next:")
+            
+            bestForPTM = -200
+            for pos,move in zip(positions,moves):
+                value_of_p = self.score(game, playerToMove, pos, depth-1, 1-playerToMove, bestForPTM)
+                if value_of_p.score > bestForPTM:
+                    bestForPTM = value_of_p.score
+                    bestMove = move
+                if bestForPTM > bestForParent:
+                    return ScoreResult(bestForPTM, 0, move)
+            return ScoreResult(bestForPTM, 0, bestMove)
+
+    def winfor(self, player, position):
+        cornerList = [(15,15),(0,0)]
+        for x in range(5): 
+            for y in range(5):
+                if y <= 5 - x:
+                    if position[(abs(cornerList[player][1]-y))][(abs(cornerList[player][0]-x))] != player + 1:
+                        return False
+        return True
+    
+    def heuristicScore(self, player, position, playerToMove):
+        pieces = self.GetPieces(position, playerToMove)
+        if playerToMove == 0: corner = 15
+        else: corner = 0
+        distance = 0
+        for piece in pieces:
+            distance += round(sqrt(((corner - piece[0])**2)+((corner - piece[1])**2)))
+        distance = round(distance/3)
+        if player == playerToMove: return ScoreResult(100-distance, 0)
+        else: return ScoreResult(distance-100, 0)
 
 
 
