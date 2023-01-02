@@ -51,11 +51,6 @@ class Player():
     def __init__(self):
         pass
 
-
-class AI(Player):
-    def __init__(self, difficulty):
-        self.difficuly = difficulty
-
     def GetPieces(self, board, player):
         canMove = []
         for y in range(16):
@@ -64,19 +59,78 @@ class AI(Player):
                     canMove.append((x,y))
         return canMove
 
+    def possibleMoves(self, game, position, playerToMove):
+        pieces = self.GetPieces(position, playerToMove)
+        moves = []
+        for piece in pieces:
+            x = piece[0]
+            y = piece[1]
+            for xMove in game.GetMovement():
+                for yMove in game.GetMovement():
+                    xFinal,yFinal = (x+xMove),(y+yMove)
+                    if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
+                        if position[y+yMove][x+xMove] == 0:
+                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+xMove,y+yMove,playerToMove)):
+                                moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
+            done = self.jumpLoop(game, playerToMove, frozenset(), addToFS(frozenset(), (tuple(map(tuple, position)),(x,y))))
+            for move in done:
+                moves.append(Move(Place(x,y),Place(move[1][0],move[1][1])))
+        return moves
+
+    def jumpLoop (self, game, playerToMove, doneBoards, todoBoards):
+        if len(todoBoards) == 0: return doneBoards
+        else:
+            currBoard = list(todoBoards)[0]
+            board = currBoard[0]
+            x,y = currBoard[1][0],currBoard[1][1]
+            if board in doneBoards: return self.jumpLoop(game, playerToMove, doneBoards, removeFromFS(todoBoards, currBoard))
+            oneStepBoards = frozenset()
+            for delta in game.GetJumpCheck():
+                xFinal,yFinal = (x+delta[0]),(y+delta[1])
+                if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
+                    if board[y+delta[1]][x+delta[0]] == 0:
+                        if board[y+(delta[1]//2)][x+(delta[0]//2)] != 0:
+                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+delta[0],y+delta[1],playerToMove)):
+                                tempBoard = self.simulateMove(list(map(list, board)),Move(Place(x,y),Place(xFinal,yFinal)),playerToMove)
+                                oneStepBoards = addToFS(oneStepBoards, (tuple(map(tuple, tempBoard)),(xFinal,yFinal)))
+            return self.jumpLoop(game, playerToMove, addToFS(doneBoards, currBoard), removeFromFS(todoBoards, currBoard).union(oneStepBoards.difference(doneBoards)))
+
+    def simulateMove(self, position, move, playerToMove):
+        board = copy.deepcopy(position)
+        board[move.start.y][move.start.x] = 0
+        board[move.end.y][move.end.x] = playerToMove + 1
+        return board
+
+    def dumpBoard(self, board):
+        for row in board:
+            print(row)
+        print("")
+
+    def GetMove(self, game):
+        raise NotImplementedError
+
+
+    
+class EasyAI(Player):
+    def __init__(self):
+        ...
+
     def GetMove(self, game):
         board = copy.deepcopy(game.GetBoard())
-        if self.difficuly == 1:
-            moves = self.possibleMoves(game, board, game.GetTurn()-1)
-            chosen = randint(0, len(moves))
-            return moves[chosen-1]
+        moves = self.possibleMoves(game, board, game.GetTurn()-1)
+        chosen = randint(0, len(moves))
+        return moves[chosen-1]
 
-        elif self.difficuly == 2:
-            
-            score = self.score(game, game.GetTurn()-1, board, 2, game.GetTurn()-1) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
-            move = score.move
-            
-            return move
+    
+
+class MediumAI(Player):
+    def __init__(self):
+        ...
+        
+    def GetMove(self, game):
+        board = copy.deepcopy(game.GetBoard())
+        score = self.score(game, game.GetTurn()-1, board, 2, game.GetTurn()-1) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
+        return score.move
 
 
     def score(self, game, player, position, depth, playerToMove, move=None):
@@ -114,16 +168,7 @@ class AI(Player):
                 scoreObj.reverse()
                 return scoreObj
 
-    def simulateMove(self, position, move, playerToMove):
-        board = copy.deepcopy(position)
-        board[move.start.y][move.start.x] = 0
-        board[move.end.y][move.end.x] = playerToMove + 1
-        return board
-
-    def dumpBoard(self, board):
-        for row in board:
-            print(row)
-        print("")
+    
 
     def sortScores(self, scores, low, high):
         if low < high:
@@ -163,45 +208,6 @@ class AI(Player):
         distance = round(distance/3)
         if player == playerToMove: return ScoreResult(100-distance, 0, move)
         else: return ScoreResult(distance-100, 0, move)
-
-    def possibleMoves(self, game, position, playerToMove):
-        pieces = self.GetPieces(position, playerToMove)
-        moves = []
-        for piece in pieces:
-            x = piece[0]
-            y = piece[1]
-            for xMove in game.GetMovement():
-                for yMove in game.GetMovement():
-                    xFinal,yFinal = (x+xMove),(y+yMove)
-                    if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
-                        if position[y+yMove][x+xMove] == 0:
-                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+xMove,y+yMove,playerToMove)):
-                                moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
-            done = self.jumpLoop(game, playerToMove, frozenset(), addToFS(frozenset(), (tuple(map(tuple, position)),(x,y))))
-            for move in done:
-                moves.append(Move(Place(x,y),Place(move[1][0],move[1][1])))
-        return moves
-
-    def jumpLoop (self, game, playerToMove, doneBoards, todoBoards):
-        if len(todoBoards) == 0: return doneBoards
-        else:
-            currBoard = list(todoBoards)[0]
-            board = currBoard[0]
-            x,y = currBoard[1][0],currBoard[1][1]
-            if board in doneBoards: return self.jumpLoop(game, playerToMove, doneBoards, removeFromFS(todoBoards, currBoard))
-            oneStepBoards = frozenset()
-            for delta in game.GetJumpCheck():
-                xFinal,yFinal = (x+delta[0]),(y+delta[1])
-                if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
-                    if board[y+delta[1]][x+delta[0]] == 0:
-                        if board[y+(delta[1]//2)][x+(delta[0]//2)] != 0:
-                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+delta[0],y+delta[1],playerToMove)):
-                                tempBoard = self.simulateMove(list(map(list, board)),Move(Place(x,y),Place(xFinal,yFinal)),playerToMove)
-                                oneStepBoards = addToFS(oneStepBoards, (tuple(map(tuple, tempBoard)),(xFinal,yFinal)))
-            return self.jumpLoop(game, playerToMove, addToFS(doneBoards, currBoard), removeFromFS(todoBoards, currBoard).union(oneStepBoards.difference(doneBoards)))
-
-
-
 
 
 

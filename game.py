@@ -64,6 +64,26 @@ class Game:
 
     def GetJumpCheck(self):
         return self._jump_check
+
+    def LoadGame(self, file):
+        with open(file, "r") as f:
+            row = 0
+            for line in f:
+                if row < 16:
+                    for col in range(len(line)-1):
+                        self._board[row][col] = int(line[col])
+                elif row == 16: self._turn = int(line)
+                row += 1
+
+    def SaveGame(self, file):
+        with open(file, "w") as f:
+            for row in self._board:
+                for piece in row:
+                    f.write(str(piece))
+                f.write("\n")
+            f.write(str(self._turn))
+                    
+            
     
     def EndTurn(self):
         winner = False

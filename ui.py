@@ -1,6 +1,6 @@
 from random import randint
 from game import Game
-from player import AI, Human
+from player import Human, EasyAI, MediumAI
 import tkinter as tk
 from tkinter import N, S, E, W, ttk, END
 import sys
@@ -246,7 +246,7 @@ class Gui(Ui):
             PlayerNameFourBox['state'] = 'readonly'
             PlayerNameFourBox.bind('<<ComboboxSelected>>', lambda event:self.nameHandler(3,PlayerNameFour.get()))
             
-        PlayButton = tk.Button(PlayerNames, text="Play", width=20, height=2, command=lambda:[self.MenuRoot.destroy(),self.gamemodeHandler(ai, players)]).grid(column=1, row=0, sticky=(N,E,S,W))
+        PlayButton = tk.Button(PlayerNames, text="Play", width=20, height=2, command=lambda:[self.MenuRoot.destroy(),self.gamemodeHandler(ai, players)]).grid(column=1, row=0, sticky=(N,E,S,W))        
         Quit = tk.Button(PlayerNames, text="Quit", width=20, height=2, command=self.MenuRoot.destroy).grid(column=1, row=1, sticky=(N,E,S,W))
         PlayerNames.mainloop()
 
@@ -362,6 +362,9 @@ class Gui(Ui):
         QuitText = FONT.render("Quit", True, "BLACK")
         Quit = pygame.draw.rect(screen,(255,255,255), (820, 740, 150, 40))
         screen.blit(QuitText, QuitText.get_rect(center = Quit.center))
+        LoadSaveText = FONT.render("Load/Save", True, "BLACK")
+        LoadSave = pygame.draw.rect(screen, (255,255,255), (820, 650, 150, 30))
+        screen.blit(LoadSaveText, LoadSaveText.get_rect(center = LoadSave.center))
 
         if game.GetPlayers() == 2:
 
@@ -507,6 +510,9 @@ class Gui(Ui):
                     elif 970 >= mouse[0] >= 820 and 780 >= mouse[1] >= 740:
                         running = False
                         pygame.quit()
+                    elif 970 >= mouse[0] >= 820 and 680 >= mouse[1] >= 650:
+                        self.LoadOrSave(game)
+                        self.boardUpdate(screen, game, False)
                     else:
                         if not jump:
                             moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, False)
@@ -518,7 +524,8 @@ class Gui(Ui):
 
     def AiPlay(self, difficulty):
         game = Game(2)
-        ai = AI(difficulty)
+        if difficulty == 1: ai = EasyAI()
+        elif difficulty == 2: ai = MediumAI()
         pygame.init()
         pygame.font.init()
         FONT = pygame.font.Font(None, 25)
@@ -560,12 +567,30 @@ class Gui(Ui):
                     elif 970 >= mouse[0] >= 820 and 780 >= mouse[1] >= 740:
                         running = False
                         pygame.quit()
+                    elif 970 >= mouse[0] >= 820 and 680 >= mouse[1] >= 650:
+                        self.LoadOrSave(game)
+                        self.boardUpdate(screen, game, False)
                     else:
                         if game.GetTurn() == 1:
                             moves, toMove, jump = self.MoveCheckandMove(mouse, game, screen, moves, toMove, jump)
                             
                         
         pygame.quit()
+
+    def LoadOrSave(self, game):
+        LoadOrSaveRoot = tk.Tk()
+        LoadOrSaveRoot.title("Save Or Load")
+        LoadOrSave = ttk.Frame(LoadOrSaveRoot, padding="5 5 12 12")
+        LoadOrSave.grid(column=0, row=0, sticky=(N, E, S, W))
+
+        LoadAndSaveTextEntry = tk.Entry(LoadOrSave, width=20)
+        LoadAndSaveTextEntry.grid(column=0, row=2, sticky=(N,E,S,W))
+        
+        LoadButton = tk.Button(LoadOrSave, text="Load", width=20, height=2, command=lambda:[game.LoadGame(LoadAndSaveTextEntry.get()),LoadOrSaveRoot.destroy()]).grid(column=0, row=1, sticky=(N,E,S,W))
+        SaveButton = tk.Button(LoadOrSave, text="Save", width=20, height=2, command=lambda:[game.SaveGame(LoadAndSaveTextEntry.get()),LoadOrSaveRoot.destroy()]).grid(column=0, row=3, sticky=(N,E,S,W))
+
+        LoadOrSave.mainloop()
+
 
     
     def Winner(self, game, screen):
