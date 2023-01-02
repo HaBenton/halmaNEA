@@ -3,15 +3,40 @@ from itertools import repeat
 from math import sqrt
 import copy
 
+def addToFS(fs, elt):
+    return fs.union(frozenset({elt}))
+
+def removeFromFS(fs, elt):
+    return fs.difference(frozenset({elt}))
+
 class Place():
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
+    def __hash__(self):
+        return hash((self.x, self.y))
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return self.x == other.x and self.y == other.y
+
+
 class Move():
     def __init__(self, start, end):
         self.start = start
         self.end = end
+
+    def __hash__(self):
+        return hash((self.start, self.end))
+
+    def __eq__(self, other):
+        return self.start == other.end and self.start == other.end
+    
+    def __ne__(self, other):
+        return self.start == other.end and self.start == other.end
 
 class ScoreResult():
     def __init__(self, score, iswin, move=None):
@@ -68,6 +93,7 @@ class AI(Player):
             #    self.dumpBoard(board)
             #pause = input("next:")
             scores = list(map(self.score, repeat(game), repeat(playerToMove), positions, repeat(depth-1), repeat(1-playerToMove), moves))
+            #sortScores(scores, 0, len(scores)-1)
             for sc in range(len(scores)):
                 scores[sc].move = moves[sc]
             if moves == []: raise Exception(f"No Moves {moves}")
@@ -98,6 +124,25 @@ class AI(Player):
         for row in board:
             print(row)
         print("")
+
+    def sortScores(self, scores, low, high):
+        if low < high:
+            part = self.partition(scores, low, high)
+            self.sortScores(scores, low, part-1)
+            self.sortScores(scores, part+1, high)
+            
+    def partition(self, scores, low, high):
+        pivot = scores[high]
+        i = low - 1
+
+        for j in range(low, high):
+            if scores[j].score >= pivot.score:
+                i = i + 1
+                (scores[i], scores[j]) = (scores[j], scores[i])
+
+        (scores[i+1], scores[high]) = (scores[high], scores[i+1])
+
+        return i+1
 
     def winfor(self, player, position):
         cornerList = [(15,15),(0,0)]
@@ -132,25 +177,32 @@ class AI(Player):
                         if position[y+yMove][x+xMove] == 0:
                             if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+xMove,y+yMove,playerToMove)):
                                 moves.append(Move(Place(x,y),Place(xFinal,yFinal)))
-            moves += self.possibleJumpMoves(game, position, playerToMove, x, y, x, y)
+            done = self.jumpLoop(game, playerToMove, frozenset(), addToFS(frozenset(), (tuple(map(tuple, position)),(x,y))))
+            for move in done:
+                moves.append(Move(Place(x,y),Place(move[1][0],move[1][1])))
         return moves
-            
-    def possibleJumpMoves(self, game, position, playerToMove, originalX, originalY, x, y): 
-        moves = []
-        if position[y][x] == playerToMove+1:
-            for move in game.GetJumpCheck():
-                xFinal,yFinal = (x+move[0]),(y+move[1])
-                #if (xFinal,yFinal) not in allJumps:
+
+    def jumpLoop (self, game, playerToMove, doneBoards, todoBoards):
+        if len(todoBoards) == 0: return doneBoards
+        else:
+            currBoard = list(todoBoards)[0]
+            board = currBoard[0]
+            x,y = currBoard[1][0],currBoard[1][1]
+            if board in doneBoards: return self.jumpLoop(game, playerToMove, doneBoards, removeFromFS(todoBoards, currBoard))
+            oneStepBoards = frozenset()
+            for delta in game.GetJumpCheck():
+                xFinal,yFinal = (x+delta[0]),(y+delta[1])
                 if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
-                    if position[y+move[1]][x+move[0]] == 0:
-                        if position[y+(move[1]//2)][x+(move[0]//2)] != 0:
-                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+move[0],y+move[1],playerToMove)):
-                                #print(move)
-                                moves.append(Move(Place(originalX,originalY),Place(xFinal,yFinal)))
-                                #allJumps.append((xFinal,yFinal))
-                                #chainMoves = self.possibleJumpMoves(game, position, originalX, originalY, xFinal, yFinal, allJumps)
-                                #moves += chainMoves
-        return moves
+                    if board[y+delta[1]][x+delta[0]] == 0:
+                        if board[y+(delta[1]//2)][x+(delta[0]//2)] != 0:
+                            if (not game.CornerCheck(x,y,playerToMove)) or (game.CornerCheck(x,y,playerToMove) and game.CornerCheck(x+delta[0],y+delta[1],playerToMove)):
+                                tempBoard = self.simulateMove(list(map(list, board)),Move(Place(x,y),Place(xFinal,yFinal)),playerToMove)
+                                oneStepBoards = addToFS(oneStepBoards, (tuple(map(tuple, tempBoard)),(xFinal,yFinal)))
+            return self.jumpLoop(game, playerToMove, addToFS(doneBoards, currBoard), removeFromFS(todoBoards, currBoard).union(oneStepBoards.difference(doneBoards)))
+
+
+
+
 
 
 class Human(Player):
