@@ -36,6 +36,11 @@ class Game:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
+        ##########################################
+        # CATAGORY B: Multi-dimensional arrays   #
+        # used a 2d array to represent the board #
+        ##########################################
+
         cornerList = [(0,0),(15,15),(15,0),(0,15)]
         if self._numPlayers == 2:
             width = 5
@@ -66,6 +71,10 @@ class Game:
         return self._jump_check
 
     def LoadGame(self, file):
+        ###########################################
+        # CATAGORY B: reading from a file         #
+        # used to import a game state from a file #
+        ###########################################
         with open(file, "r") as f:
             row = 0
             for line in f:
@@ -76,6 +85,10 @@ class Game:
                 row += 1
 
     def SaveGame(self, file):
+        #######################################
+        # CATAGORY B: writing to a file       #
+        # used to save a game state to a file #
+        #######################################
         with open(file, "w") as f:
             for row in self._board:
                 for piece in row:
@@ -148,8 +161,6 @@ class Game:
                             self._board[start[1]][start[0]] = 0
                             self._board[end[1]][end[0]] = self._turn
                             return "hop"
-            else:
-                print("not valid piece to move")
         return False
 
     def aiMove(self, move):

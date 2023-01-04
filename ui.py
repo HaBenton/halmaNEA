@@ -145,7 +145,15 @@ class Gui(Ui):
         self.MenuRoot.title("play game")
         self.activeNames = [None, None, None, None]
         self.names = {}
+        #####################################################################################
+        # CATAGORY B: dictionaries                                                          #
+        # used a dictionary to make a pair of the name of a player with their player object #
+        #####################################################################################
         self.rawNames = []
+        ###############################################
+        # CATAGORY B: reading from a file             #
+        # used to import the player stats from a file #
+        ###############################################
         with open ("stats.txt", "r") as f:
             for line in f:
                 name = line.split(":")
@@ -615,6 +623,10 @@ class Gui(Ui):
 
         first = True
         sorted(self.names)
+        ##################################################
+        # CATAGORY B: writing to a file                  #
+        # used to store/update the player stats on a win #
+        ##################################################
         with open("stats.txt", "w") as f:
             for key in self.names:
                 if not first:

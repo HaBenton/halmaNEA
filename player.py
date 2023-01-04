@@ -47,7 +47,11 @@ class ScoreResult():
     def reverse(self):
         self.score = -self.score
 
-class Player():
+class AI():
+    ##############################################################################
+    # CATAGORY A: Complex user-defined use of OOP (inheritance)                  #
+    # used inheritance to give all the versions of the AIs access to key methods #
+    ##############################################################################
     def __init__(self):
         pass
 
@@ -62,6 +66,10 @@ class Player():
     def possibleMoves(self, game, position, playerToMove):
         pieces = self.GetPieces(position, playerToMove)
         moves = []
+        ###########################################
+        # CATAGORY C: single dimentional arrays   #
+        # used an array to store all of the moves #
+        ###########################################
         for piece in pieces:
             x = piece[0]
             y = piece[1]
@@ -85,6 +93,10 @@ class Player():
             x,y = currBoard[1][0],currBoard[1][1]
             if board in doneBoards: return self.jumpLoop(game, playerToMove, doneBoards, removeFromFS(todoBoards, currBoard))
             oneStepBoards = frozenset()
+            ################################################################################
+            # CATAGORY A: structures of equivalent standard                                #
+            # used a frozen set to make sure duplicates do not appear in the list of moves #
+            ################################################################################
             for delta in game.GetJumpCheck():
                 xFinal,yFinal = (x+delta[0]),(y+delta[1])
                 if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
@@ -111,7 +123,7 @@ class Player():
 
 
     
-class EasyAI(Player):
+class EasyAI(AI):
     def __init__(self):
         ...
 
@@ -123,7 +135,7 @@ class EasyAI(Player):
 
 
 
-class MediumAI(Player):
+class MediumAI(AI):
     def __init__(self):
         ...
 
@@ -140,14 +152,12 @@ class MediumAI(Player):
             return self.heuristicScore(player, position, playerToMove, move)
         else:
             moves = self.possibleMoves(game, position, playerToMove)
-            #print(len(moves))
-            #pause = input("next:")
             positions = list(map(self.simulateMove, repeat(position), moves, repeat(playerToMove)))
-            #for board in positions:
-            #    self.dumpBoard(board)
-            #pause = input("next:")
+            ####################################################################
+            # CATAGORY A: Recursive algorithms                                 #
+            # used a recursive search to check every move that the AI can make #
+            ####################################################################
             scores = list(map(self.score, repeat(game), repeat(playerToMove), positions, repeat(depth-1), repeat(1-playerToMove), moves))
-            #sortScores(scores, 0, len(scores)-1)
             for sc in range(len(scores)):
                 scores[sc].move = moves[sc]
             if moves == []: raise Exception(f"No Moves {moves}")
@@ -205,12 +215,16 @@ class MediumAI(Player):
         for piece in pieces:
             distance += round(sqrt(((corner - piece[0])**2)+((corner - piece[1])**2)))
         distance = round(distance/3)
+        #########################################################################################################################
+        # CATAGORY A: Dynamic generation of objects                                                                             #
+        # used objects to represent the scores that are being generated for a position while keeping the moves together with it #
+        #########################################################################################################################
         if player == playerToMove: return ScoreResult(100-distance, 0, move)
         else: return ScoreResult(distance-100, 0, move)
 
 
 
-class HardAI(Player):
+class HardAI(AI):
     def __init__(self):
         ...
 
@@ -228,22 +242,25 @@ class HardAI(Player):
             return self.heuristicScore(position, 1-playerToMove)
         else:
             moves = self.possibleMoves(game, position, playerToMove)
-            #print(f"moves:{len(moves)}")
-            #pause = input("next:")
             positions = list(map(self.simulateMove, repeat(position), moves, repeat(playerToMove)))
-            #for board in positions:
-                #self.dumpBoard(board)
-            #pause = input("next:")
             
             bestForPTM = -200
             for pos,move in zip(positions,moves):
+                ####################################################################
+                # CATAGORY A: Recursive algorithms                                 #
+                # used a recursive search to check every move that the AI can make #
+                ####################################################################
                 value_of_p = self.score(game, pos, depth-1, 1-playerToMove, bestForPTM)
-                print(value_of_p.score, bestForPTM, bestForParent)
-                #pause = input("next:")
+                #print(value_of_p.score, bestForPTM, bestForParent)
                 if value_of_p.score > bestForPTM:
                     bestForPTM = value_of_p.score
                     bestMove = move
                 if -bestForPTM < bestForParent:
+                    #########################################################################################################################
+                    # CATAGORY A: Dynamic generation of objects                                                                             #
+                    # used objects to represent the scores that are being generated for a position while keeping the moves together with it #
+                    #########################################################################################################################
+
                     return ScoreResult(-bestForPTM, 0, move)
             return ScoreResult(-bestForPTM, 0, bestMove)
 
@@ -278,7 +295,7 @@ class HardAI(Player):
 
 
 
-class Human(Player):
+class Human():
     def __init__(self, name, wins, loss):
         self.name = name
         self.currWins = 0
