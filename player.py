@@ -21,7 +21,7 @@ class Place():
         return self.x == other.x and self.y == other.y
 
     def __ne__(self, other):
-        return self.x == other.x and self.y == other.y
+        return self.x != other.x and self.y != other.y
 
 
 class Move():
@@ -36,7 +36,7 @@ class Move():
         return self.start == other.end and self.start == other.end
     
     def __ne__(self, other):
-        return self.start == other.end and self.start == other.end
+        return self.start != other.end and self.start != other.end
 
 class ScoreResult():
     def __init__(self, score, iswin, move=None):
@@ -48,10 +48,6 @@ class ScoreResult():
         self.score = -self.score
 
 class AI():
-    ##############################################################################
-    # CATAGORY A: Complex user-defined use of OOP (inheritance)                  #
-    # used inheritance to give all the versions of the AIs access to key methods #
-    ##############################################################################
     def __init__(self):
         pass
 
@@ -66,10 +62,6 @@ class AI():
     def possibleMoves(self, game, position, playerToMove):
         pieces = self.GetPieces(position, playerToMove)
         moves = []
-        ###########################################
-        # CATAGORY C: single dimentional arrays   #
-        # used an array to store all of the moves #
-        ###########################################
         for piece in pieces:
             x = piece[0]
             y = piece[1]
@@ -124,6 +116,11 @@ class AI():
 
     
 class EasyAI(AI):
+    ##############################################################################
+    # CATAGORY A: Complex user-defined use of OOP (inheritance)                  #
+    # used inheritance to give all the versions of the AIs access to key methods #
+    ##############################################################################
+
     def __init__(self):
         ...
 
@@ -152,6 +149,10 @@ class MediumAI(AI):
             return self.heuristicScore(player, position, playerToMove, move)
         else:
             moves = self.possibleMoves(game, position, playerToMove)
+            #######################################################
+            # CATAGORY A: Tree Traversal                          #
+            # used tree traversal to seach through possible moves #
+            #######################################################
             positions = list(map(self.simulateMove, repeat(position), moves, repeat(playerToMove)))
             ####################################################################
             # CATAGORY A: Recursive algorithms                                 #
@@ -225,6 +226,11 @@ class MediumAI(AI):
 
 
 class HardAI(AI):
+    ##############################################################################
+    # CATAGORY A: Complex user-defined use of OOP (inheritance)                  #
+    # used inheritance to give all the versions of the AIs access to key methods #
+    ##############################################################################
+
     def __init__(self):
         ...
 
@@ -243,7 +249,11 @@ class HardAI(AI):
         else:
             moves = self.possibleMoves(game, position, playerToMove)
             positions = list(map(self.simulateMove, repeat(position), moves, repeat(playerToMove)))
-            
+            ########################################################
+            # CATAGORY A: Tree Traversal                           #
+            # used tree traversal to search through possible moves #
+            ########################################################
+
             bestForPTM = -200
             for pos,move in zip(positions,moves):
                 ####################################################################
