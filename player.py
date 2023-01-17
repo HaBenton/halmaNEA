@@ -59,7 +59,7 @@ class AI():
                     canMove.append((x,y))
         return canMove
 
-    def possibleMoves(self, game, position, playerToMove):
+    def _possibleMoves(self, game, position, playerToMove):
         pieces = self._GetPieces(position, playerToMove)
         moves = []
         for piece in pieces:
@@ -126,7 +126,7 @@ class EasyAI(AI):
 
     def GetMove(self, game):
         board = copy.deepcopy(game.GetBoard())
-        moves = self.possibleMoves(game, board, game.GetTurn()-1)
+        moves = self._possibleMoves(game, board, game.GetTurn()-1)
         chosen = randint(0, len(moves))
         return moves[chosen-1]
 
@@ -148,7 +148,7 @@ class MediumAI(AI):
         if depth == 0:
             return self.__heuristicScore(player, position, playerToMove, move)
         else:
-            moves = self.possibleMoves(game, position, playerToMove)
+            moves = self._possibleMoves(game, position, playerToMove)
             #######################################################
             # CATAGORY A: Tree Traversal                          #
             # used tree traversal to seach through possible moves #
@@ -218,7 +218,6 @@ class HardAI(AI):
     def GetMove(self, game):
         board = copy.deepcopy(game.GetBoard())
         score = self.__score(game, board, 2, game.GetTurn()-1, -200) #player is stored as player 1 or 2 but needs to be 0 or 1 to be manipulated
-        print(score.score, score.move.start.x, score.move.start.y, score.move.end.x, score.move.end.y)
         return score.move
 
 
@@ -228,7 +227,7 @@ class HardAI(AI):
         if depth == 0:
             return self.__heuristicScore(position, 1-playerToMove)
         else:
-            moves = self.possibleMoves(game, position, playerToMove)
+            moves = self._possibleMoves(game, position, playerToMove)
             positions = list(map(self._simulateMove, repeat(position), moves, repeat(playerToMove)))
             ########################################################
             # CATAGORY A: Tree Traversal                           #
@@ -242,7 +241,6 @@ class HardAI(AI):
                 # used a recursive search to check every move that the AI can make #
                 ####################################################################
                 value_of_p = self.__score(game, pos, depth-1, 1-playerToMove, bestForPTM)
-                #print(value_of_p.score, bestForPTM, bestForParent)
                 if value_of_p.score > bestForPTM:
                     bestForPTM = value_of_p.score
                     bestMove = move
@@ -271,15 +269,12 @@ class HardAI(AI):
         else: corner = 0
         distance = 0
         for piece in pieces1:
-            #print(piece)
             distance += sqrt(((corner - piece[0])**2)+((corner - piece[1])**2))
-            #print(distance)
         playerToMove = 1-playerToMove
         pieces2 = self._GetPieces(position, playerToMove)
         if playerToMove == 0: corner = 15
         else: corner = 0
         for piece in pieces2:
-            #print(piece)
             distance -= sqrt(((corner - piece[0])**2)+((corner - piece[1])**2))
         distance = distance/(len(pieces1)+len(pieces2))
         return ScoreResult(100-distance, 0)

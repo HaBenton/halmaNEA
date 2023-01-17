@@ -274,7 +274,7 @@ class Gui(Ui):
         if ai != 0: self.__AiPlay(ai)
         else: self.__NoAiPlay(players)
 
-    def __boardSetup(self, players, game):
+    def __boardSetup(self, game):
         screen = pygame.display.set_mode((1005, 800))
         screen.fill((100,100,100))
         pygame.display.set_caption("Halma")
@@ -320,7 +320,6 @@ class Gui(Ui):
 
 
     def __GetMoves(self, game, x, y, screen, jump):
-        board = game.GetBoard()
         self.__boardUpdate(screen, game, (x,y))
         moves = game.GetMoves(x, y, jump)
         for move in moves:
