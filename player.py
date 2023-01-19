@@ -241,6 +241,10 @@ class HardAI(AI):
                 # used a recursive search to check every move that the AI can make #
                 ####################################################################
                 value_of_p = self.__score(game, pos, depth-1, 1-playerToMove, bestForPTM)
+                ####################################################################
+                # CATAGORY A: Complex user defined algorithms (optimisation)       #
+                # used alpha-beta pruning to optimise the minimax search algorithm #
+                ####################################################################
                 if value_of_p.score > bestForPTM:
                     bestForPTM = value_of_p.score
                     bestMove = move

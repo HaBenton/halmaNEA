@@ -497,7 +497,7 @@ class Gui(Ui):
         pygame.init()
         pygame.font.init()
         FONT = pygame.font.Font(None, 25)
-        screen = self.__boardSetup(players, game)
+        screen = self.__boardSetup(game)
 
         if toMove != ():
             self.__GetMoves(game,toMove[0],toMove[1],screen,jump)
@@ -540,7 +540,7 @@ class Gui(Ui):
         pygame.init()
         pygame.font.init()
         FONT = pygame.font.Font(None, 25)
-        screen = self.__boardSetup(2, game)
+        screen = self.__boardSetup(game)
         
         running = True
         moves = []
@@ -605,9 +605,21 @@ class Gui(Ui):
 
     
     def __Winner(self, game, replay, diff=0):
-        winnerNum = game.GetTurn()-1
-        if winnerNum == 0:
-            winnerNum = game.GetPlayers()
+        #print(game.GetTurn())
+        if game.GetPlayers() == 2:
+            if game.GetTurn() == 1:
+                winnerNum = 1
+            elif game.GetTurn() == 2:
+                winnerNum = 0
+        if game.GetPlayers() == 4:
+            if game.GetTurn() == 1:
+                winnerNum = 3
+            elif game.GetTurn() == 2:
+                winnerNum = 0
+            elif game.GetTurn() == 3:
+                winnerNum = 1
+            elif game.GetTurn() == 4:
+                winnerNum = 2
         winnerName = self.__activeNames[winnerNum]
         
         for name in self.__activeNames:
@@ -636,7 +648,7 @@ class Gui(Ui):
                 
 
 
-        WinnerTextVar = f"The Winner is player {winnerNum}!"
+        WinnerTextVar = f"The Winner is player {winnerNum+1}!"
         EndOfGameRoot = tk.Tk()
         EndOfGameRoot.title("Game Over")
         EndOfGame = ttk.Frame(EndOfGameRoot, padding="5 5 12 12")
