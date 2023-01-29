@@ -85,10 +85,10 @@ class AI():
             x,y = currBoard[1][0],currBoard[1][1]
             if board in doneBoards: return self._jumpLoop(game, playerToMove, doneBoards, removeFromFS(todoBoards, currBoard))
             oneStepBoards = frozenset()
-            ################################################################################
-            # CATAGORY A: structures of equivalent standard                                #
-            # used a frozen set to make sure duplicates do not appear in the list of moves #
-            ################################################################################
+            ######################################################################################################
+            # CATAGORY A: Hash tables, lists, stacks, queues, graphs, trees or structures of equivalent standard #
+            # used a frozen set to make sure duplicates do not appear in the list of moves                       #
+            ######################################################################################################
             for delta in game.GetJumpCheck():
                 xFinal,yFinal = (x+delta[0]),(y+delta[1])
                 if xFinal >= 0 and yFinal >= 0 and xFinal <= 15 and yFinal <= 15:
